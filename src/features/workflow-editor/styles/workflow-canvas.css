@@ -1,0 +1,180 @@
+.workflow-canvas {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  background: #f8f9fb;
+}
+
+.workflow-canvas .react-flow {
+  --xy-background-color: #f8f9fb;
+  --xy-background-pattern-dot-color-default: #c7ced8;
+  --xy-controls-button-background-color-default: #ffffff;
+  --xy-controls-button-background-color-hover-default: #f4f6f8;
+  --xy-controls-button-color-default: #27313d;
+  --xy-controls-button-color-hover-default: #111827;
+  --xy-controls-button-border-color-default: #d6dce3;
+  --xy-selection-background-color: rgba(37, 99, 235, 0.08);
+  --xy-selection-border: 1px solid rgba(37, 99, 235, 0.55);
+  background: #f8f9fb;
+}
+
+.workflow-canvas .react-flow__pane {
+  cursor: default;
+}
+
+.workflow-canvas .react-flow__pane.selection {
+  cursor: default;
+}
+
+.workflow-canvas--tool-hand .react-flow__pane {
+  cursor: grab;
+}
+
+.workflow-canvas .react-flow__pane.dragging,
+.workflow-canvas .react-flow__pane.react-flow__pane--dragging {
+  cursor: grabbing;
+}
+
+.workflow-canvas--tool-start .react-flow__pane,
+.workflow-canvas--tool-task .react-flow__pane,
+.workflow-canvas--tool-approval .react-flow__pane,
+.workflow-canvas--tool-decision .react-flow__pane,
+.workflow-canvas--tool-end .react-flow__pane {
+  cursor: crosshair;
+}
+
+.workflow-node-preview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.workflow-node {
+  width: 176px;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #d4dbe4;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2937;
+  box-shadow: 0 4px 12px rgba(31, 37, 45, 0.08);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
+}
+
+.workflow-node:hover {
+  border-color: #b7c1cf;
+}
+
+.workflow-node[data-selected="true"] {
+  border-color: #2563eb;
+  box-shadow:
+    0 0 0 2px rgba(37, 99, 235, 0.22),
+    0 6px 16px rgba(31, 37, 45, 0.1);
+}
+
+.workflow-node[data-dragging="true"] {
+  box-shadow:
+    0 0 0 2px rgba(37, 99, 235, 0.18),
+    0 12px 28px rgba(31, 37, 45, 0.18);
+}
+
+.workflow-node[data-preview="true"] {
+  border-style: dashed;
+  opacity: 0.62;
+  box-shadow: 0 8px 20px rgba(31, 37, 45, 0.12);
+}
+
+.workflow-node__icon {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #31506f;
+}
+
+.workflow-node[data-node-type="start"] .workflow-node__icon {
+  background: #ecfdf3;
+  color: #16803c;
+}
+
+.workflow-node[data-node-type="approval"] .workflow-node__icon {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.workflow-node[data-node-type="decision"] .workflow-node__icon {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.workflow-node[data-node-type="end"] .workflow-node__icon {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.workflow-node__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.workflow-canvas .canvas-controls {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #d6dce3;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(31, 37, 45, 0.08);
+}
+
+.workflow-canvas .canvas-controls.react-flow__controls {
+  margin: 18px;
+}
+
+.workflow-canvas .canvas-controls button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-right: 1px solid #e2e6eb;
+  border-radius: 0;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.workflow-canvas .canvas-controls button:last-child {
+  border-right: 0;
+}
+
+.workflow-canvas .canvas-controls button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
+.workflow-canvas .canvas-controls__zoom-indicator,
+.workflow-canvas .canvas-controls__zoom-indicator:disabled {
+  width: 64px;
+  color: #334155;
+  background: #ffffff;
+  cursor: default;
+  opacity: 1;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
