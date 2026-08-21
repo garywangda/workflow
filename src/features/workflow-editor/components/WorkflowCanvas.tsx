@@ -11,87 +11,69 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import { useCallback, useEffect, useState } from "react";
+import { createDiagramElement } from "../factories/create-diagram-element";
+import { createWorkflowNode } from "../factories/create-workflow-node";
+import type { EditorTool } from "../types/editor-tool";
+import type { DiagramNode } from "../types/diagram-element";
+import type { PlacementItem } from "../types/placement";
+import type { WorkflowNode } from "../types/workflow-node";
 import { CanvasControls } from "./CanvasControls";
+import { EditorTools } from "./tools/EditorTools";
 import { WORKFLOW_NODE_ORIGIN, workflowNodeTypes } from "./nodes/node-types";
 import { WorkflowNodePreview } from "./nodes/WorkflowNodePreview";
-import { EditorToolBox } from "./toolbox/EditorToolBox";
-import { isWorkflowNodeTool } from "../config/workflow-node-definitions";
-import { createWorkflowNode } from "../factories/create-workflow-node";
-import type { EditorToolId } from "../types/editor-tool";
-import type { WorkflowNode } from "../types/workflow-node";
+
+type EditorNode = WorkflowNode | DiagramNode;
 
 const EMPTY_EDGES: Edge[] = [];
 const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
 
 interface WorkflowCanvasProps {
-  activeTool: EditorToolId;
-  onToolChange: (tool: EditorToolId) => void;
+  activeEditorTool: EditorTool;
+  placementItem: PlacementItem | null;
+  onEditorToolChange: (tool: EditorTool) => void;
+  onPlacementItemChange: (item: PlacementItem | null) => void;
 }
 
-export function WorkflowCanvas({ activeTool, onToolChange }: WorkflowCanvasProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState<WorkflowNode>([]);
+export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolChange, onPlacementItemChange }: WorkflowCanvasProps) {
+  const [nodes, setNodes, onNodesChange] = useNodesState<EditorNode>([]);
   const [placementPosition, setPlacementPosition] = useState<XYPosition | null>(null);
-  const { screenToFlowPosition } = useReactFlow<WorkflowNode, Edge>();
-  const isHandTool = activeTool === "hand";
-  const isPlacementMode = isWorkflowNodeTool(activeTool);
+  const { screenToFlowPosition } = useReactFlow<EditorNode, Edge>();
+  const isHandTool = activeEditorTool === "hand";
+  const isPlacementMode = placementItem !== null;
   const isSelectionDragEnabled = !isHandTool && !isPlacementMode;
 
   useEffect(() => {
-    if (!isPlacementMode) {
-      setPlacementPosition(null);
-    }
+    if (!isPlacementMode) setPlacementPosition(null);
   }, [isPlacementMode]);
 
-  const handlePaneMouseMove = useCallback(
-    (event: React.MouseEvent) => {
-      if (!isWorkflowNodeTool(activeTool)) {
-        return;
-      }
+  const positionFromEvent = useCallback((event: React.MouseEvent) => screenToFlowPosition({ x: event.clientX, y: event.clientY }), [screenToFlowPosition]);
 
-      setPlacementPosition(
-        screenToFlowPosition({
-          x: event.clientX,
-          y: event.clientY,
-        }),
-      );
-    },
-    [activeTool, screenToFlowPosition],
-  );
+  const handlePaneMouseMove = useCallback((event: React.MouseEvent) => {
+    if (placementItem) setPlacementPosition(positionFromEvent(event));
+  }, [placementItem, positionFromEvent]);
 
-  const handlePaneMouseLeave = useCallback(() => {
+  const handlePaneClick = useCallback((event: React.MouseEvent) => {
+    if (!placementItem) return;
+    const position = positionFromEvent(event);
+    let newNode: EditorNode;
+    if (placementItem.kind === "workflow-node") {
+      newNode = createWorkflowNode({ type: placementItem.type, position });
+    } else if (placementItem.kind === "action-preset") {
+      newNode = createWorkflowNode({ type: "action", presetId: placementItem.presetId, position });
+    } else {
+      newNode = createDiagramElement({ type: placementItem.type, position });
+    }
+    setNodes((currentNodes) => [...currentNodes.map((node) => ({ ...node, selected: false })), newNode]);
     setPlacementPosition(null);
-  }, []);
+    onPlacementItemChange(null);
+    onEditorToolChange("select");
+  }, [onEditorToolChange, onPlacementItemChange, placementItem, positionFromEvent, setNodes]);
 
-  const handlePaneClick = useCallback(
-    (event: React.MouseEvent) => {
-      if (!isWorkflowNodeTool(activeTool)) {
-        return;
-      }
-
-      const newNode = createWorkflowNode({
-        type: activeTool,
-        position: screenToFlowPosition({
-          x: event.clientX,
-          y: event.clientY,
-        }),
-      });
-
-      setNodes((currentNodes) => [
-        ...currentNodes.map((node) => ({
-          ...node,
-          selected: false,
-        })),
-        newNode,
-      ]);
-      setPlacementPosition(null);
-      onToolChange("select");
-    },
-    [activeTool, onToolChange, screenToFlowPosition, setNodes],
-  );
+  const preview = placementItem?.kind === "workflow-node" ? placementItem.type : null;
 
   return (
-    <div className={`workflow-canvas workflow-canvas--tool-${activeTool}`} aria-label="Workflow canvas">
-      <ReactFlow<WorkflowNode, Edge>
+    <div className={`workflow-canvas workflow-canvas--tool-${activeEditorTool} ${isPlacementMode ? "workflow-canvas--placement" : ""}`} aria-label="Workflow canvas">
+      <ReactFlow<EditorNode, Edge>
         className="workflow-canvas__flow"
         nodes={nodes}
         edges={EMPTY_EDGES}
@@ -100,7 +82,7 @@ export function WorkflowCanvas({ activeTool, onToolChange }: WorkflowCanvasProps
         onNodesChange={onNodesChange}
         onPaneClick={handlePaneClick}
         onPaneMouseMove={handlePaneMouseMove}
-        onPaneMouseLeave={handlePaneMouseLeave}
+        onPaneMouseLeave={() => setPlacementPosition(null)}
         defaultViewport={DEFAULT_VIEWPORT}
         minZoom={0.1}
         maxZoom={4}
@@ -113,14 +95,8 @@ export function WorkflowCanvas({ activeTool, onToolChange }: WorkflowCanvasProps
         preventScrolling
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
-        <Panel position="top-left" className="toolbox-panel">
-          <EditorToolBox activeTool={activeTool} onToolChange={onToolChange} />
-        </Panel>
-        {isPlacementMode && placementPosition ? (
-          <ViewportPortal>
-            <WorkflowNodePreview type={activeTool} position={placementPosition} />
-          </ViewportPortal>
-        ) : null}
+        <Panel position="top-left" className="editor-tools-panel"><EditorTools activeEditorTool={activeEditorTool} onEditorToolChange={onEditorToolChange} /></Panel>
+        {preview && placementPosition ? <ViewportPortal><WorkflowNodePreview type={preview} position={placementPosition} /></ViewportPortal> : null}
         <CanvasControls />
       </ReactFlow>
     </div>

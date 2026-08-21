@@ -3,7 +3,9 @@ import type { WorkflowNodeType } from "../../types/workflow-node";
 
 interface BaseWorkflowNodeProps {
   type: WorkflowNodeType;
-  label: string;
+  semanticLabel: string;
+  name: string;
+  status?: string;
   icon: LucideIcon;
   selected?: boolean;
   dragging?: boolean;
@@ -12,7 +14,9 @@ interface BaseWorkflowNodeProps {
 
 export function BaseWorkflowNode({
   type,
-  label,
+  semanticLabel,
+  name,
+  status = "Needs setup",
   icon: Icon,
   selected = false,
   dragging = false,
@@ -29,7 +33,11 @@ export function BaseWorkflowNode({
       <span className="workflow-node__icon" aria-hidden="true">
         <Icon size={17} strokeWidth={1.9} />
       </span>
-      <span className="workflow-node__label">{label}</span>
+      <span className="workflow-node__content">
+        <span className="workflow-node__semantic-label">{semanticLabel}</span>
+        <span className="workflow-node__name">{name}</span>
+        {!preview ? <span className="workflow-node__status">{status}</span> : null}
+      </span>
     </div>
   );
 }

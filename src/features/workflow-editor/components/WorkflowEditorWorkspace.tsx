@@ -1,20 +1,32 @@
 import { useCallback, useState } from "react";
-import { WorkflowCanvas } from "./WorkflowCanvas";
 import { useEditorToolShortcuts } from "../hooks/useEditorToolShortcuts";
-import type { EditorToolId } from "../types/editor-tool";
+import type { EditorTool } from "../types/editor-tool";
+import type { PlacementItem } from "../types/placement";
+import { NodeLibrary } from "./library/NodeLibrary";
+import { NodeInspector } from "./inspector/NodeInspector";
+import { WorkflowCanvas } from "./WorkflowCanvas";
 
 export function WorkflowEditorWorkspace() {
-  const [activeTool, setActiveTool] = useState<EditorToolId>("select");
+  const [activeEditorTool, setActiveEditorTool] = useState<EditorTool>("select");
+  const [placementItem, setPlacementItem] = useState<PlacementItem | null>(null);
 
-  const handleToolChange = useCallback((tool: EditorToolId) => {
-    setActiveTool(tool);
+  const handleEditorToolChange = useCallback((tool: EditorTool) => {
+    setActiveEditorTool(tool);
+    setPlacementItem(null);
   }, []);
 
-  useEditorToolShortcuts(handleToolChange);
+  const handlePlacementItemChange = useCallback((item: PlacementItem | null) => {
+    setPlacementItem(item);
+    if (item) setActiveEditorTool("select");
+  }, []);
+
+  useEditorToolShortcuts(handleEditorToolChange);
 
   return (
     <section className="workflow-editor__workspace" aria-label="Editor workspace">
-      <WorkflowCanvas activeTool={activeTool} onToolChange={handleToolChange} />
+      <NodeLibrary placementItem={placementItem} onPlacementItemChange={handlePlacementItemChange} />
+      <WorkflowCanvas activeEditorTool={activeEditorTool} placementItem={placementItem} onEditorToolChange={handleEditorToolChange} onPlacementItemChange={handlePlacementItemChange} />
+      <NodeInspector />
     </section>
   );
 }

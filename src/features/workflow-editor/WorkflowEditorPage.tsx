@@ -3,7 +3,8 @@ import { EditorHeader } from "./components/EditorHeader";
 import { WorkflowEditorWorkspace } from "./components/WorkflowEditorWorkspace";
 import "./styles/workflow-editor.css";
 import "./styles/workflow-canvas.css";
-import "./styles/toolbox.css";
+import "./styles/node-library.css";
+import "./styles/inspector.css";
 
 export function WorkflowEditorPage() {
   return (

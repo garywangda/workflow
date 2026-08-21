@@ -15,7 +15,8 @@ export const WorkflowNodeComponent = memo(function WorkflowNodeComponent({
   return (
     <BaseWorkflowNode
       type={type}
-      label={data.label}
+      semanticLabel={definition.label}
+      name={data.name}
       icon={definition.icon}
       selected={selected}
       dragging={dragging}
