@@ -3,6 +3,10 @@ import {
   type ConnectionLineComponentProps,
 } from "@xyflow/react";
 
+/**
+ * React Flow 在连接拖动期间调用的自定义预览线。
+ * React Flow 提供坐标和连接状态；本组件只负责把它们绘制成带箭头的平滑折线。
+ */
 export function WorkflowConnectionLine({
   fromX,
   fromY,
@@ -12,6 +16,7 @@ export function WorkflowConnectionLine({
   toPosition,
   connectionStatus,
 }: ConnectionLineComponentProps) {
+  // 使用 React Flow 官方路径工具，保证预览线与最终 smoothstep Edge 的走向一致。
   const [path] = getSmoothStepPath({
     sourceX: fromX,
     sourceY: fromY,
@@ -24,6 +29,7 @@ export function WorkflowConnectionLine({
   return (
     <g className={`workflow-connection-line workflow-connection-line--${connectionStatus ?? "pending"}`}>
       <defs>
+        {/* 预览线的 SVG 箭头；完成后的 Edge 使用 React Flow 的 MarkerType。 */}
         <marker
           id="workflow-connection-arrow"
           markerWidth="8"

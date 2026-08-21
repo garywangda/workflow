@@ -1,6 +1,7 @@
 import { Circle, Diamond, RectangleHorizontal, StickyNote, Type, type LucideIcon } from "lucide-react";
 import type { DiagramElementType } from "../types/diagram-element";
 
+// Diagram library 的图形元数据和展示顺序，与语义 Workflow Node 配置分开维护。
 export interface DiagramElementDefinition {
   type: DiagramElementType;
   label: string;

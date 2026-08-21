@@ -4,6 +4,7 @@ import { WorkflowNodeComponent } from "./WorkflowNode";
 
 export const WORKFLOW_NODE_ORIGIN: NodeOrigin = [0.5, 0.5];
 
+// React Flow 的 nodeTypes 注册表。多个语义节点复用 WorkflowNodeComponent，图形元素复用 DiagramNodeComponent。
 export const workflowNodeTypes = {
   trigger: WorkflowNodeComponent,
   task: WorkflowNodeComponent,

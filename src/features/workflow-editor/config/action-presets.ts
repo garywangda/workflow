@@ -2,6 +2,7 @@ import { FilePlus2, Globe2, Mail, PencilLine, type LucideIcon } from "lucide-rea
 import type { ActionPresetId } from "../types/action-preset";
 import type { NodeConfig } from "../types/workflow-node";
 
+// 自动化节点的快捷预设；预设只提供默认配置，最终仍由 workflow-node factory 创建 Node。
 export interface ActionPresetDefinition {
   id: ActionPresetId;
   label: string;

@@ -1,3 +1,4 @@
+// 顶部栏只承载编辑器标题和全局操作入口，不拥有画布编辑状态。
 export function EditorHeader() {
   return (
     <header className="editor-header">

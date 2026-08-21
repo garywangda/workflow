@@ -117,6 +117,7 @@
 }
 
 .workflow-node__connection-handles {
+  /* React Flow Handle 负责命中；这一层负责统一控制四个连接点的显隐。 */
   position: absolute;
   inset: 0;
   z-index: 4;
@@ -136,6 +137,7 @@
 }
 
 .workflow-connection-handle {
+  /* 28px 是可操作命中区，内部 9px 圆点只是默认视觉尺寸。 */
   width: 28px !important;
   height: 28px !important;
   border: 0 !important;
@@ -166,6 +168,7 @@
 }
 
 .workflow-connection-handle::before {
+  /* 默认显示小圆点；hover/connecting/valid 状态下由下面的规则放大。 */
   position: absolute;
   top: 50%;
   left: 50%;
@@ -212,6 +215,7 @@
 }
 
 .workflow-connection-line {
+  /* 拖动中的连接线由 WorkflowConnectionLine 输出，状态通过 class 着色。 */
   color: #2563eb;
 }
 

@@ -28,6 +28,8 @@ export interface WorkflowNodeDefinition {
   keywords: readonly string[];
 }
 
+// 配置优先（config-first）：新增节点通常先在这里声明，再接入 library、factory 和渲染层。
+// capabilities 决定 Inspector 展示哪些配置区块；keywords 决定 Node Library 的搜索结果。
 export const WORKFLOW_NODE_DEFINITIONS = {
   trigger: { type: "trigger", category: "event", label: "Trigger", description: "Starts a workflow when an event occurs.", icon: CirclePlay, defaultName: "Trigger", capabilities: ["setup", "output"], defaultConfig: {}, appearance: { semanticRole: "event" }, keywords: ["event", "start", "when"] },
   task: { type: "task", category: "human", label: "Task", description: "Assigns a human step to someone on your team.", icon: Square, defaultName: "Task", capabilities: ["setup", "assignment", "form", "input", "output", "completion", "timing", "notification", "escalation", "permissions"], defaultConfig: {}, appearance: { semanticRole: "human-task" }, keywords: ["people", "human", "work"] },

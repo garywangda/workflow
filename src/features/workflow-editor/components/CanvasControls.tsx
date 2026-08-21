@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { ControlButton, Controls, type Viewport, useOnViewportChange } from "@xyflow/react";
 
+// 画布控制器通过 React Flow 的 viewport hooks 操作视口，不直接修改节点或 Edge。
 export function CanvasControls() {
   const [zoom, setZoom] = useState(1);
 

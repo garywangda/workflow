@@ -8,6 +8,7 @@ import type { WorkflowNode } from "../../types/workflow-node";
 
 type EditorSelection = WorkflowNode | DiagramNode;
 
+// Inspector 当前是能力驱动的展示壳；真实选中节点状态接入后可在此处连接配置表单。
 export function NodeInspector() {
   const nodes = useNodes<EditorSelection>();
   const selectedNode = useMemo(() => nodes.find((node) => node.selected), [nodes]);

@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import { Handle, Position } from "@xyflow/react";
 import type { WorkflowNodeType } from "../../types/workflow-node";
 
+// 四个连接方向使用固定 id，后续如果需要区分输入/输出端口，可以在此处扩展 Handle 配置。
 const CONNECTION_HANDLES = [
   { id: "top", position: Position.Top },
   { id: "right", position: Position.Right },
@@ -40,6 +41,7 @@ export function BaseWorkflowNode({
     >
       {!preview ? (
         <div className="workflow-node__connection-handles" aria-label="Node connection points">
+          {/* Handle 负责连接命中和吸附；圆点、加号和动画由 workflow-canvas.css 绘制。 */}
           {CONNECTION_HANDLES.map((handle) => (
             <Handle
               key={handle.id}

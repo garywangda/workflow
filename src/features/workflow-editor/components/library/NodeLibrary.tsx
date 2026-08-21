@@ -33,6 +33,8 @@ function LibraryButton({ label, description, icon: Icon, active, onClick }: Libr
 }
 
 export function NodeLibrary({ placementItem, onPlacementItemChange }: NodeLibraryProps) {
+  // Library 只产生 PlacementItem，不直接创建 React Flow Node。
+  // 真正的节点实例由 WorkflowCanvas 调用 factory 创建，保证创建逻辑集中。
   const [query, setQuery] = useState("");
   const normalizedQuery = query.trim().toLowerCase();
   const matches = (label: string, keywords: readonly string[], category: string) =>

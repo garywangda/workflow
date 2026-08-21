@@ -31,6 +31,7 @@ import { WorkflowNodePreview } from "./nodes/WorkflowNodePreview";
 
 type EditorNode = WorkflowNode | DiagramNode;
 
+// 画布的默认视口。节点和 Edge 的坐标都在 React Flow 的 flow 坐标系中维护。
 const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
 
 interface WorkflowCanvasProps {
@@ -41,6 +42,8 @@ interface WorkflowCanvasProps {
 }
 
 export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolChange, onPlacementItemChange }: WorkflowCanvasProps) {
+  // 画布是节点、Edge 和临时交互状态的唯一状态持有者。
+  // 节点/Edge 的增删改由 React Flow 的 change handlers 驱动，便于后续接入持久化。
   const [nodes, setNodes, onNodesChange] = useNodesState<EditorNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [placementPosition, setPlacementPosition] = useState<XYPosition | null>(null);
@@ -51,6 +54,8 @@ export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolCh
   const isPlacementMode = placementItem !== null;
   const isSelectionDragEnabled = !isHandTool && !isPlacementMode;
 
+  // React Flow 官方的连接入口：释放在有效 Handle 上时，把新的 Connection 转成 Edge。
+  // addEdge 会保留现有 Edge，并补齐 source/target 等连接字段。
   const handleConnect: OnConnect = useCallback(
     (connection) => {
       setEdges((currentEdges) => addEdge(connection, currentEdges));
@@ -59,12 +64,17 @@ export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolCh
     [setEdges],
   );
 
+  // 开始拖动连接线时显示所有节点的连接点，方便用户寻找目标 Handle。
   const handleConnectStart = useCallback(() => {
     setSuppressConnectionHandles(false);
     setIsConnecting(true);
   }, []);
+
+  // React Flow 无论连接成功还是取消，都会结束连接状态。
   const handleConnectEnd = useCallback(() => setIsConnecting(false), []);
 
+  // 成功连接后先隐藏连接点，避免新建 Edge 的瞬间仍被 Handle 覆盖。
+  // 下一次鼠标移动会解除隐藏，恢复正常的 hover 行为。
   const handleCanvasMouseMoveCapture = useCallback(() => {
     if (suppressConnectionHandles) setSuppressConnectionHandles(false);
   }, [suppressConnectionHandles]);
@@ -79,6 +89,7 @@ export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolCh
     if (placementItem) setPlacementPosition(positionFromEvent(event));
   }, [placementItem, positionFromEvent]);
 
+  // 节点库采用“点击选择类型，再点击画布放置”的两阶段交互。
   const handlePaneClick = useCallback((event: React.MouseEvent) => {
     if (!placementItem) return;
     const position = positionFromEvent(event);
@@ -98,6 +109,9 @@ export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolCh
 
   const preview = placementItem?.kind === "workflow-node" ? placementItem.type : null;
 
+  // Loose 模式允许四个方向的 Handle 同时作为连接起点和终点。
+  // connectionRadius 决定鼠标靠近 Handle 多远时触发目标吸附。
+  // connectionLineComponent 和 defaultEdgeOptions 分别控制拖动预览线与完成后的 Edge。
   return (
     <div
       className={`workflow-canvas workflow-canvas--tool-${activeEditorTool} ${isPlacementMode ? "workflow-canvas--placement" : ""} ${isConnecting ? "workflow-canvas--connecting" : ""} ${suppressConnectionHandles ? "workflow-canvas--suppress-connection-handles" : ""}`}
