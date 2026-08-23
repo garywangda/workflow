@@ -25,6 +25,8 @@ import type { PlacementItem } from "../types/placement";
 import type { WorkflowNode } from "../types/workflow-node";
 import { CanvasControls } from "./CanvasControls";
 import { WorkflowConnectionLine } from "./edges/WorkflowConnectionLine";
+import { WorkflowContextMenu } from "./menus/WorkflowContextMenu";
+import { WorkflowDeleteDialog } from "./menus/WorkflowDeleteDialog";
 import { EditorTools } from "./tools/EditorTools";
 import { WORKFLOW_NODE_ORIGIN, workflowNodeTypes } from "./nodes/node-types";
 import { WorkflowNodePreview } from "./nodes/WorkflowNodePreview";
@@ -41,6 +43,23 @@ interface WorkflowCanvasProps {
   onPlacementItemChange: (item: PlacementItem | null) => void;
 }
 
+interface DeleteRequest {
+  nodeIds: string[];
+  edgeIds: string[];
+}
+
+interface ContextMenuState {
+  nodeId: string;
+  x: number;
+  y: number;
+}
+
+function isEditableTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  const tagName = target.tagName.toLowerCase();
+  return tagName === "input" || tagName === "textarea" || tagName === "select" || target.isContentEditable;
+}
+
 export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolChange, onPlacementItemChange }: WorkflowCanvasProps) {
   // 画布是节点、Edge 和临时交互状态的唯一状态持有者。
   // 节点/Edge 的增删改由 React Flow 的 change handlers 驱动，便于后续接入持久化。
@@ -49,10 +68,19 @@ export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolCh
   const [placementPosition, setPlacementPosition] = useState<XYPosition | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [suppressConnectionHandles, setSuppressConnectionHandles] = useState(false);
-  const { screenToFlowPosition } = useReactFlow<EditorNode, Edge>();
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [deleteRequest, setDeleteRequest] = useState<DeleteRequest | null>(null);
+  const { deleteElements, screenToFlowPosition } = useReactFlow<EditorNode, Edge>();
   const isHandTool = activeEditorTool === "hand";
   const isPlacementMode = placementItem !== null;
   const isSelectionDragEnabled = !isHandTool && !isPlacementMode;
+
+  const positionFromClientPoint = useCallback((clientX: number, clientY: number) => {
+    const canvas = document.querySelector<HTMLElement>(".workflow-canvas");
+    if (!canvas) return { x: clientX, y: clientY };
+    const bounds = canvas.getBoundingClientRect();
+    return { x: clientX - bounds.left, y: clientY - bounds.top };
+  }, []);
 
   // React Flow 官方的连接入口：释放在有效 Handle 上时，把新的 Connection 转成 Edge。
   // addEdge 会保留现有 Edge，并补齐 source/target 等连接字段。
@@ -83,14 +111,65 @@ export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolCh
     if (!isPlacementMode) setPlacementPosition(null);
   }, [isPlacementMode]);
 
+  // React Flow 的默认 Delete 行为关闭后，由这里统一进入确认流程。
+  // 只监听 Delete，不把 Enter 作为删除快捷键。
+  useEffect(() => {
+    const handleDeleteKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.key !== "Delete" || isEditableTarget(event.target)) return;
+
+      const nodeIds = nodes.filter((node) => node.selected).map((node) => node.id);
+      const edgeIds = edges.filter((edge) => edge.selected).map((edge) => edge.id);
+      if (nodeIds.length === 0 && edgeIds.length === 0) return;
+
+      event.preventDefault();
+      setContextMenu(null);
+      setDeleteRequest({ nodeIds, edgeIds });
+    };
+
+    window.addEventListener("keydown", handleDeleteKeyDown);
+    return () => window.removeEventListener("keydown", handleDeleteKeyDown);
+  }, [edges, nodes]);
+
   const positionFromEvent = useCallback((event: React.MouseEvent) => screenToFlowPosition({ x: event.clientX, y: event.clientY }), [screenToFlowPosition]);
 
   const handlePaneMouseMove = useCallback((event: React.MouseEvent) => {
     if (placementItem) setPlacementPosition(positionFromEvent(event));
   }, [placementItem, positionFromEvent]);
 
+  // 画布空白处右键只负责取消放置模式，不显示浏览器默认菜单。
+  const handlePaneContextMenu = useCallback((event: MouseEvent | React.MouseEvent<Element, MouseEvent>) => {
+    event.preventDefault();
+    setContextMenu(null);
+    if (placementItem) onPlacementItemChange(null);
+  }, [onPlacementItemChange, placementItem]);
+
+  // 节点右键打开项目菜单；如果此时正在放置节点，先取消预览，防止误放置。
+  const handleNodeContextMenu = useCallback((event: React.MouseEvent, node: EditorNode) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (placementItem) onPlacementItemChange(null);
+    const position = positionFromClientPoint(event.clientX, event.clientY);
+    setContextMenu({ nodeId: node.id, x: position.x, y: position.y });
+  }, [onPlacementItemChange, placementItem, positionFromClientPoint]);
+
+  const handleNodeDeleteRequest = useCallback(() => {
+    if (!contextMenu) return;
+    setContextMenu(null);
+    setDeleteRequest({ nodeIds: [contextMenu.nodeId], edgeIds: [] });
+  }, [contextMenu]);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteRequest) return;
+    await deleteElements({
+      nodes: deleteRequest.nodeIds.map((id) => ({ id })),
+      edges: deleteRequest.edgeIds.map((id) => ({ id })),
+    });
+    setDeleteRequest(null);
+  }, [deleteElements, deleteRequest]);
+
   // 节点库采用“点击选择类型，再点击画布放置”的两阶段交互。
   const handlePaneClick = useCallback((event: React.MouseEvent) => {
+    setContextMenu(null);
     if (!placementItem) return;
     const position = positionFromEvent(event);
     let newNode: EditorNode;
@@ -130,6 +209,9 @@ export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolCh
         onConnectStart={handleConnectStart}
         onConnectEnd={handleConnectEnd}
         onPaneClick={handlePaneClick}
+        onPaneContextMenu={handlePaneContextMenu}
+        onNodeClick={() => setContextMenu(null)}
+        onNodeContextMenu={handleNodeContextMenu}
         onPaneMouseMove={handlePaneMouseMove}
         onPaneMouseLeave={() => setPlacementPosition(null)}
         defaultViewport={DEFAULT_VIEWPORT}
@@ -150,6 +232,8 @@ export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolCh
         selectionOnDrag={isSelectionDragEnabled}
         panOnDrag={isHandTool}
         selectionMode={SelectionMode.Partial}
+        // 删除由自定义确认流程处理，避免 React Flow 直接删除选中元素。
+        deleteKeyCode={null}
         zoomOnDoubleClick={false}
         preventScrolling
       >
@@ -158,6 +242,15 @@ export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolCh
         {preview && placementPosition ? <ViewportPortal><WorkflowNodePreview type={preview} position={placementPosition} /></ViewportPortal> : null}
         <CanvasControls />
       </ReactFlow>
+      {contextMenu ? <WorkflowContextMenu x={contextMenu.x} y={contextMenu.y} onDelete={handleNodeDeleteRequest} /> : null}
+      {deleteRequest ? (
+        <WorkflowDeleteDialog
+          nodeCount={deleteRequest.nodeIds.length}
+          edgeCount={deleteRequest.edgeIds.length}
+          onCancel={() => setDeleteRequest(null)}
+          onConfirm={handleDeleteConfirm}
+        />
+      ) : null}
     </div>
   );
 }

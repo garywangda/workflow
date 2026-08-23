@@ -175,7 +175,23 @@ draw.io 只作为连接点、方向箭头和吸附交互的行为参考；项目
 6. 连接数据目前只存在内存中。如果以后接入保存功能，应在 Workspace 或更高层统一管理序列化，不要让单个节点组件直接调用 API。
 7. 完成修改后至少运行 `pnpm typecheck`、`pnpm lint` 和 `pnpm build`。
 
-## 8. 验证命令
+## 8. 放置取消和删除交互
+
+### 8.1 取消放置
+
+Node Library 选择项目后，`placementItem` 非空，Canvas 会显示跟随鼠标的预览节点。空白画布右键由 `onPaneContextMenu` 处理：阻止浏览器默认菜单，并把 `placementItem` 清空；它不会创建节点，也不会改变已有节点和 Edge。
+
+### 8.2 节点右键删除
+
+节点右键由 `onNodeContextMenu` 打开 `WorkflowContextMenu`。菜单中的删除动作只创建 `deleteRequest`，必须在 `WorkflowDeleteDialog` 中再次确认后才执行删除。
+
+### 8.3 Delete 键删除
+
+`WorkflowCanvas` 将 React Flow 的 `deleteKeyCode` 设为 `null`，避免 React Flow 绕过确认窗口直接删除。Canvas 自己只监听 `Delete`，读取当前选中的节点和 Edge，弹出同一个确认窗口；没有把 `Enter` 注册为删除快捷键。
+
+确认后通过 React Flow 官方 `deleteElements` 删除节点和 Edge。删除节点时，React Flow 会一并删除关联 Edge；因此不要在节点组件内手动修改其他节点或 Edge。
+
+## 9. 验证命令
 
 在项目根目录运行：
 
@@ -185,4 +201,3 @@ pnpm lint
 pnpm build
 git diff --check
 ```
-
