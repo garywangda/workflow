@@ -9,7 +9,6 @@ function isEditableTarget(target: EventTarget | null) {
   return tagName === "input" || tagName === "textarea" || tagName === "select" || target.isContentEditable;
 }
 
-// 将键盘快捷键绑定到工具切换回调；Hook 不直接修改 Canvas 状态。
 export function useEditorToolShortcuts(onToolChange: (tool: EditorTool) => void) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

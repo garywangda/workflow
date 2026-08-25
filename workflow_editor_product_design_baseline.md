@@ -1,15 +1,79 @@
 # Workflow Editor 产品设计基线
 ## Visual Business Workflow SaaS — Product Model & Editor Architecture
 
-> 版本：v0.1  
+> 版本：v0.2
 > 状态：Draft / Design Baseline  
-> 用途：作为后续 Workflow Editor、Toolbox、React Flow Node、Inspector、Workflow JSON、Execution Engine 与 AI 功能设计的统一基线。
+> 用途：作为后续管理台、员工执行端、Workflow Editor、Toolbox、React Flow Node、Inspector、Workflow JSON、Execution Engine 与 AI 功能设计的统一基线。
 
 ---
 
 # 1. 文档目的
 
-本文档用于整理当前 Workflow SaaS 的核心产品设计方向。
+本文档用于整理当前 Workflow SaaS 的核心产品设计方向，以及当前管理台概念原型的范围边界。
+
+## 1.1 当前产品阶段
+
+当前阶段只实现：
+
+```text
+Management Console Concept Prototype
+管理者 / 运营人员管理台概念原型
+```
+
+当前阶段的目标是验证：
+
+```text
+流程如何被设计
+流程如何被配置
+流程如何被发布
+流程运行后如何被查看
+工作内容和进度如何被管理
+```
+
+当前阶段暂不实现：
+
+```text
+真实后端
+真实数据库
+员工执行 App
+真实流程执行引擎
+真实登录与权限
+真实通知
+第三方系统连接
+真实 AI 调用
+```
+
+运行状态、执行记录和统计数据可以通过 Mock Data 展示，用于验证管理台的信息架构和交互体验。
+
+## 1.2 产品用户与产品端
+
+首要用户是负责制定、维护和管理业务流程的运营人员与经理。
+
+未来产品包含两个主要界面：
+
+```text
+Management Console
+面向运营人员和经理，用于设计、配置、发布和监控流程
+
+Employee App
+面向员工，用于接收、执行和提交系统配发的任务
+```
+
+两个界面未来可以作为不同的子系统或应用部署，但应基于同一套底层流程、任务、权限、数据和审计模型。当前仅制作 Management Console 的概念原型，Employee App 和后端系统属于后续阶段。
+
+管理台的核心价值不是单纯绘制流程，而是：
+
+```text
+设计流程
+→
+发布流程
+→
+分配工作
+→
+查看执行进度
+→
+处理异常并了解结果
+```
 
 产品目标不是：
 
@@ -20,7 +84,9 @@
 
 目标是建立一个：
 
-> **对普通企业管理人员足够容易使用，同时又能够承载复杂企业流程的 Visual Business Workflow Editor。**
+> **对运营人员和经理足够容易使用，同时又能够承载跨行业业务流程的 Visual Business Workflow Management Platform。**
+
+当前管理台是该平台的第一阶段产品表现形式。员工执行端不是当前原型范围，但会影响未来的任务、表单、执行记录和权限设计。
 
 整体能力方向：
 
@@ -1517,6 +1583,69 @@ Task Inspector 引用 Form。
 
 # 29. Editor Information Architecture
 
+## 29.1 管理台与员工端的产品边界
+
+当前产品设计只实现管理台概念原型，但信息架构需要预留未来员工端的边界。
+
+```text
+Management Console
+│
+├── Dashboard
+├── Workflows
+├── Workflow Editor
+├── Workflow Run Monitor
+├── Tasks / Progress
+├── People & Teams
+├── Reports
+└── Settings
+```
+
+管理台面向运营人员和经理，主要负责：
+
+```text
+创建和编辑流程
+配置任务、审批、表单和规则
+发布流程版本
+查看流程实例
+查看任务进度和工作内容
+处理异常、超时和重新分配
+```
+
+未来员工端面向员工，主要负责：
+
+```text
+接收待办任务
+查看任务说明
+填写表单
+上传文件或其他信息
+提交执行结果
+评论、反馈或请求帮助
+查看个人历史记录
+```
+
+员工端不需要暴露：
+
+```text
+Workflow Canvas
+Node Type
+Capability Schema
+流程版本配置
+高级执行规则
+```
+
+员工端与管理台是两个不同的产品界面，但不是两个互相独立的执行系统。未来两者应共享：
+
+```text
+Workflow Definition
+Workflow Instance
+Task Instance
+Execution Record
+Permission Model
+Audit Log
+```
+
+当前原型只通过管理台和 Mock Data 表现未来运行结果，不实现员工端和真实服务端。
+
 推荐：
 
 ```text
@@ -1527,6 +1656,7 @@ Workflow Editor
 ├── Canvas
 ├── Right Inspector
 ├── Workflow Health
+├── Mock Runtime / Run Monitor
 └── AI Assistant
 ```
 
@@ -1871,7 +2001,28 @@ Consider adding error handling
 
 # 38. Execution Layer
 
-Workflow 运行时应该直接 Overlay 到 Canvas。
+未来真实运行时应该直接 Overlay 到 Canvas。
+
+当前管理台概念原型不实现真实 Execution Engine，而是使用 Mock Runtime State 展示管理者在流程运行期间需要看到的信息。原型重点验证：
+
+```text
+流程实例当前走到哪里
+哪些任务已完成
+哪些任务正在等待
+哪些任务发生异常
+谁负责当前工作
+流程整体进度如何
+```
+
+管理台可以提供两种查看方式：
+
+```text
+Workflow Canvas Overlay
+查看流程结构上的运行状态
+
+Workflow Run Monitor
+查看某一次流程实例的任务、人员、时间和记录
+```
 
 例如：
 
@@ -1932,6 +2083,41 @@ Instance：
 完成
 历史
 ```
+
+在 Definition 与 Instance 之间，还需要明确区分具体的工作任务和执行记录：
+
+```text
+Workflow Definition
+流程模板，由运营人员或经理设计
+
+Workflow Version
+已发布的不可变版本
+
+Workflow Instance
+某一次实际启动的流程
+
+Task Instance
+该次流程中分配给某个人或团队的具体任务
+
+Execution Record
+任务执行过程中产生的表单、附件、评论、输入、输出、时间和操作记录
+```
+
+标准关系：
+
+```text
+Workflow Definition
+        ↓ Publish
+Workflow Version
+        ↓ Start
+Workflow Instance
+        ↓ Generate
+Task Instances
+        ↓ Execute
+Execution Records
+```
+
+当前原型只需要通过 Mock Data 模拟 Workflow Instance、Task Instance 和 Execution Record 的展示，不要求这些对象已经由真实后端创建。
 
 ---
 
@@ -2355,6 +2541,8 @@ v3
 
 建议第一版约 12–15 个核心执行 Node。
 
+这些 Node 是未来 Workflow Engine 的通用语义原语，同时也是当前管理台原型中用于展示流程设计能力的主要节点。当前原型不要求这些节点已经具备真实执行能力。
+
 | Category | Node | Purpose | MVP |
 |---|---|---|---|
 | Event | Trigger | 启动流程 | P0 |
@@ -2377,7 +2565,47 @@ v3
 
 # 52. MVP Priority
 
-## P0
+本节区分当前管理台概念原型与未来完整产品的优先级。
+
+## 当前概念原型 P0
+
+当前原型必须优先验证管理台的核心体验：
+
+```text
+Management Console Shell
+Dashboard
+Workflow List
+Workflow Editor
+Workflow Node Library
+Infinite Canvas
+Node placement
+Click-to-place
+Drag & drop
+Connections
+Edge +
+Selection
+Right Inspector
+Undo / redo
+Workflow Health
+Mock Workflow Run Monitor
+Mock Task / Progress View
+```
+
+当前原型中的运行状态、任务进度、人员和执行记录均可使用 Mock Data。原型不包含真实保存、真实执行、真实登录或真实员工端。
+
+当前原型中的通用数据展示可以包括：
+
+```text
+Workflow Definition
+Workflow Version
+Workflow Instance
+Task Instance
+Execution Record
+Person / Team
+Status / Progress
+```
+
+## 未来完整产品 P0
 
 必须先做：
 
@@ -2441,7 +2669,7 @@ Dead end
 
 ---
 
-## P1
+## 未来完整产品 P1
 
 ```text
 Switch
@@ -2462,7 +2690,7 @@ Integration Catalog
 
 ---
 
-## P2
+## 未来完整产品 P2
 
 ```text
 Repeat Until
@@ -2481,6 +2709,8 @@ Advanced Permissions
 ---
 
 # 53. 不建议第一版开发的功能
+
+以下内容不属于当前管理台概念原型的实现范围，也不属于未来完整产品的早期核心范围：
 
 暂时不要：
 
@@ -3082,30 +3312,53 @@ AI Workflow Generation
 
 # 67. 当前设计基线总结
 
-当前最推荐的第一版架构：
+当前管理台概念原型的推荐架构：
 
 ```text
-Workflow Editor
+Management Console
 │
-├── Top Bar
+├── Dashboard
+├── Workflow List
+├── Workflow Editor
+│   ├── Top Bar
+│   ├── Workflow Node Library
+│   ├── Diagram Library
+│   ├── Infinite React Flow Canvas
+│   ├── Semantic Workflow Nodes
+│   ├── Capability-driven Inspector
+│   └── Workflow Health
 │
-├── Workflow Node Library
+├── Workflow Run Monitor
+├── Task / Progress View
+└── Mock Runtime Data
+```
+
+未来完整产品的推荐架构：
+
+```text
+Workflow Management Platform
 │
-├── Diagram Library
+├── Management Console
+│   ├── Dashboard
+│   ├── Workflow Editor
+│   ├── Workflow Health
+│   ├── Run Monitor
+│   └── Reports
 │
-├── Infinite React Flow Canvas
+├── Workflow Engine
+│   ├── Workflow Definition
+│   ├── Workflow Version
+│   ├── Workflow Instance
+│   ├── Task Instance
+│   └── Execution Record
 │
-├── Semantic Workflow Nodes
+├── Employee App
+│   ├── My Tasks
+│   ├── Task Execution
+│   ├── Forms
+│   └── History
 │
-├── Capability-driven Inspector
-│
-├── Workflow Context
-│
-├── Workflow Health
-│
-├── Runtime Overlay
-│
-└── AI Assistant
+└── Shared Data / Permission / Audit Model
 ```
 
 核心思想：
@@ -3140,6 +3393,44 @@ Human Workflow
 Automation
 +
 AI
+```
+
+```text
+Management Console
++
+Employee Execution App
++
+Shared Workflow Engine
+```
+
+产品的跨行业能力不通过预置某个行业流程实现，而通过通用的：
+
+```text
+Workflow Node
++
+Capability
++
+Form Field
++
+Data Mapping
++
+Assignment
++
+Rule
++
+Execution Record
+```
+
+来支持不同组织自行配置流程。
+
+当前阶段的明确边界是：
+
+```text
+只验证 Management Console 的信息架构与交互概念
+不实现 Employee App
+不实现 Backend
+不实现真实 Execution Engine
+不绑定具体行业和具体业务流程
 ```
 
 这应该作为后续 Workflow Editor 产品设计和工程实现的统一基础。

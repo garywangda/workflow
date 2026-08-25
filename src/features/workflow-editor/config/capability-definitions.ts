@@ -1,6 +1,5 @@
 import type { NodeCapabilityId } from "../types/workflow-node";
 
-// 能力的文案和说明集中管理，供 Inspector 和未来配置表单复用。
 export interface NodeCapabilityDefinition {
   id: NodeCapabilityId;
   label: string;
