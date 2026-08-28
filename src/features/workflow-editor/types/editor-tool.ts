@@ -1,24 +1,11 @@
 import type { LucideIcon } from "lucide-react";
 
-export type EditorToolId =
-  | "select"
-  | "hand"
-  | "start"
-  | "task"
-  | "approval"
-  | "decision"
-  | "end"
-  | "text"
-  | "note";
-
-export type EditorToolGroup = "navigation" | "workflow" | "annotation";
+export type EditorTool = "select" | "hand";
 
 export interface EditorToolDefinition {
-  id: EditorToolId;
+  id: EditorTool;
   label: string;
   icon: LucideIcon;
-  group: EditorToolGroup;
-  shortcut?: string;
-  disabled?: boolean;
+  shortcut: string;
   ariaLabel: string;
 }

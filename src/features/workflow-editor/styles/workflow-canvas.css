@@ -6,6 +6,70 @@
   background: #f8f9fb;
 }
 
+.workflow-context-menu {
+  position: absolute;
+  z-index: 30;
+  min-width: 148px;
+  padding: 4px;
+  border: 1px solid #d6dce3;
+  border-radius: 7px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(31, 37, 45, 0.16);
+}
+
+.workflow-context-menu__item {
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #344054;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.workflow-context-menu__item:hover,
+.workflow-context-menu__item:focus-visible {
+  background: #f2f4f7;
+  outline: none;
+}
+
+.workflow-context-menu__item--danger { color: #b42318; }
+
+.workflow-delete-dialog {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+}
+
+.workflow-delete-dialog__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.28);
+}
+
+.workflow-delete-dialog__panel {
+  position: relative;
+  width: min(360px, calc(100% - 32px));
+  padding: 20px;
+  border: 1px solid #d6dce3;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 18px 48px rgba(31, 37, 45, 0.22);
+}
+
+.workflow-delete-dialog__panel h2 { margin: 0; color: #1f2937; font-size: 16px; }
+.workflow-delete-dialog__panel p { margin: 10px 0 18px; color: #667085; font-size: 12px; line-height: 1.5; }
+.workflow-delete-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; }
+.workflow-delete-dialog__actions button { min-width: 72px; padding: 7px 12px; border: 1px solid #d0d5dd; border-radius: 6px; background: #ffffff; color: #344054; cursor: pointer; font-size: 12px; }
+.workflow-delete-dialog__actions button:hover { background: #f9fafb; }
+.workflow-delete-dialog__confirm { border-color: #b42318 !important; background: #b42318 !important; color: #ffffff !important; }
+.workflow-delete-dialog__confirm:hover { background: #912018 !important; }
+
 .workflow-canvas .react-flow {
   --xy-background-color: #f8f9fb;
   --xy-background-pattern-dot-color-default: #c7ced8;
@@ -36,11 +100,7 @@
   cursor: grabbing;
 }
 
-.workflow-canvas--tool-start .react-flow__pane,
-.workflow-canvas--tool-task .react-flow__pane,
-.workflow-canvas--tool-approval .react-flow__pane,
-.workflow-canvas--tool-decision .react-flow__pane,
-.workflow-canvas--tool-end .react-flow__pane {
+.workflow-canvas--placement .react-flow__pane {
   cursor: crosshair;
 }
 
@@ -53,8 +113,8 @@
 }
 
 .workflow-node {
-  width: 176px;
-  min-height: 52px;
+  width: 190px;
+  min-height: 82px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -104,19 +164,9 @@
   color: #31506f;
 }
 
-.workflow-node[data-node-type="start"] .workflow-node__icon {
-  background: #ecfdf3;
-  color: #16803c;
-}
-
 .workflow-node[data-node-type="approval"] .workflow-node__icon {
   background: #eff6ff;
   color: #2563eb;
-}
-
-.workflow-node[data-node-type="decision"] .workflow-node__icon {
-  background: #fff7ed;
-  color: #c2410c;
 }
 
 .workflow-node[data-node-type="end"] .workflow-node__icon {
@@ -124,15 +174,153 @@
   color: #dc2626;
 }
 
-.workflow-node__label {
+.workflow-node__content {
   min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.workflow-node__connection-handles {
+  /* React Flow Handle 负责命中；这一层负责统一控制四个连接点的显隐。 */
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.react-flow__node:hover .workflow-node__connection-handles,
+.workflow-canvas--connecting .workflow-node__connection-handles,
+.workflow-node[data-selected="true"] .workflow-node__connection-handles {
+  opacity: 1;
+}
+
+.workflow-canvas--suppress-connection-handles .workflow-node__connection-handles {
+  opacity: 0 !important;
+}
+
+.workflow-connection-handle {
+  /* 28px 是可操作命中区，内部 9px 圆点只是默认视觉尺寸。 */
+  width: 28px !important;
+  height: 28px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  pointer-events: all;
+  transform: none !important;
+}
+
+.workflow-connection-handle.react-flow__handle-top {
+  top: -14px !important;
+  left: 50% !important;
+}
+
+.workflow-connection-handle.react-flow__handle-right {
+  top: 50% !important;
+  right: -14px !important;
+}
+
+.workflow-connection-handle.react-flow__handle-bottom {
+  bottom: -14px !important;
+  left: 50% !important;
+}
+
+.workflow-connection-handle.react-flow__handle-left {
+  top: 50% !important;
+  left: -14px !important;
+}
+
+.workflow-connection-handle::before {
+  /* 默认显示小圆点；hover/connecting/valid 状态下由下面的规则放大。 */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #8b99aa;
+  border-radius: 999px;
+  background: #ffffff;
+  content: "";
+  transform: translate(-50%, -50%);
+  transition: all 120ms ease;
+}
+
+.workflow-connection-handle:hover::before,
+.workflow-connection-handle.connecting::before,
+.workflow-connection-handle.valid::before {
+  width: 22px;
+  height: 22px;
+  border-color: #2563eb;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.22);
+}
+
+.workflow-connection-handle:hover::after,
+.workflow-connection-handle.connecting::after,
+.workflow-connection-handle.valid::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: #2563eb;
+  content: "+";
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1;
+  transform: translate(-50%, -53%);
+}
+
+.workflow-canvas--connecting .react-flow__node:not(:hover) .workflow-connection-handle.valid::before {
+  border-color: #22a06b;
+  box-shadow: 0 3px 10px rgba(34, 160, 107, 0.2);
+}
+
+.workflow-canvas--connecting .react-flow__node:not(:hover) .workflow-connection-handle.valid::after {
+  color: #16803c;
+}
+
+.workflow-connection-line {
+  /* 拖动中的连接线由 WorkflowConnectionLine 输出，状态通过 class 着色。 */
+  color: #2563eb;
+}
+
+.workflow-connection-line__path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-dasharray: 7 5;
+}
+
+.workflow-connection-line--valid { color: #16803c; }
+.workflow-connection-line--invalid { color: #dc2626; }
+
+.react-flow__edge-path {
+  transition: stroke 140ms ease, stroke-width 140ms ease;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #2563eb;
+  stroke-width: 2.2;
+}
+
+.workflow-node__semantic-label {
+  color: #667085;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.workflow-node__name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: #1f2937;
   font-size: 13px;
   font-weight: 650;
   letter-spacing: 0;
 }
+
+.workflow-node__status { color: #98a2b3; font-size: 10px; }
 
 .workflow-canvas .canvas-controls {
   display: inline-flex;
@@ -178,3 +366,18 @@
   font-weight: 600;
   letter-spacing: 0;
 }
+
+.workflow-node[data-node-type="trigger"] .workflow-node__icon { background: #ecfdf3; color: #16803c; }
+.workflow-node[data-node-type="condition"] .workflow-node__icon { background: #fff7ed; color: #c2410c; }
+.workflow-node[data-node-type="action"] .workflow-node__icon { background: #f5f3ff; color: #7c3aed; }
+.workflow-node[data-node-type="end"] .workflow-node__icon { background: #fef2f2; color: #dc2626; }
+.workflow-node[data-node-type="parallel"] .workflow-node__icon,
+.workflow-node[data-node-type="merge"] .workflow-node__icon { background: #eff6ff; color: #2563eb; }
+
+.diagram-node { min-width: 112px; min-height: 58px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 14px; border: 1px solid #b8c2cf; background: rgba(255,255,255,.86); color: #475467; font-size: 12px; box-shadow: 0 3px 10px rgba(31,37,45,.06); }
+.diagram-node[data-selected="true"] { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,.2); }
+.diagram-node--circle { width: 80px; min-width: 80px; border-radius: 999px; }
+.diagram-node--diamond { transform: rotate(45deg); }
+.diagram-node--diamond > * { transform: rotate(-45deg); }
+.diagram-node--text { border-style: dashed; background: transparent; }
+.diagram-node--note { border-color: #ead28a; background: #fffbea; }

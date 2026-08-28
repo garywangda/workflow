@@ -4,6 +4,7 @@ import { WORKFLOW_NODE_DEFINITIONS } from "../../config/workflow-node-definition
 import type { WorkflowNode as WorkflowNodeModel } from "../../types/workflow-node";
 import { BaseWorkflowNode } from "./BaseWorkflowNode";
 
+// 语义 Workflow Node 的适配层：读取定义配置，再交给通用视觉组件渲染。
 export const WorkflowNodeComponent = memo(function WorkflowNodeComponent({
   data,
   type,
@@ -15,7 +16,8 @@ export const WorkflowNodeComponent = memo(function WorkflowNodeComponent({
   return (
     <BaseWorkflowNode
       type={type}
-      label={data.label}
+      semanticLabel={definition.label}
+      name={data.name}
       icon={definition.icon}
       selected={selected}
       dragging={dragging}

@@ -8,6 +8,7 @@ interface WorkflowNodePreviewProps {
   position: XYPosition;
 }
 
+// 放置模式下跟随鼠标的预览节点，不注册为真实 Node，也不显示可连接 Handle。
 export function WorkflowNodePreview({ type, position }: WorkflowNodePreviewProps) {
   const definition = WORKFLOW_NODE_DEFINITIONS[type];
 
@@ -19,7 +20,7 @@ export function WorkflowNodePreview({ type, position }: WorkflowNodePreviewProps
       }}
       aria-hidden="true"
     >
-      <BaseWorkflowNode type={type} label={definition.label} icon={definition.icon} preview />
+      <BaseWorkflowNode type={type} semanticLabel={definition.label} name={definition.defaultName} icon={definition.icon} preview />
     </div>
   );
 }
