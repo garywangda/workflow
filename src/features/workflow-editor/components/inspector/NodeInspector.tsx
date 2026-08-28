@@ -21,13 +21,13 @@ export function NodeInspector() {
   const blocks = [...node.data.capabilities].sort((a, b) => INSPECTOR_BLOCK_DEFINITIONS[a].order - INSPECTOR_BLOCK_DEFINITIONS[b].order);
 
   return (
-    <aside className="node-inspector" aria-label="Workflow inspector">
+    <aside className="w-[286px] shrink-0 overflow-y-auto overscroll-contain border-l border-border bg-panel" aria-label="Workflow inspector">
       <InspectorHeader eyebrow={definition.label.toUpperCase()} title={node.data.name} />
-      <div className="node-inspector__blocks">
+      <div className="px-[18px] pb-6 pt-2">
         {blocks.map((capability) => {
           const block = INSPECTOR_BLOCK_DEFINITIONS[capability];
           const Block = block.render;
-          return <section className="inspector__block" key={capability}><h2>{block.label}</h2><Block node={node} capability={capability} /></section>;
+          return <section className="border-b border-[#edf0f3] py-3.5" key={capability}><h2 className="mb-2 text-xs font-bold text-[#344054]">{block.label}</h2><Block node={node} capability={capability} /></section>;
         })}
       </div>
     </aside>
@@ -36,9 +36,9 @@ export function NodeInspector() {
 
 function DiagramInspector({ node }: { node: DiagramNode }) {
   const definition = DIAGRAM_ELEMENT_DEFINITIONS[node.data.elementType];
-  return <aside className="node-inspector" aria-label="Diagram inspector"><InspectorHeader eyebrow="DIAGRAM" title={definition.label} /><div className="diagram-inspector__empty">Diagram properties placeholder.<small>Appearance, text, and size will be configured here.</small></div></aside>;
+  return <aside className="w-[286px] shrink-0 overflow-y-auto overscroll-contain border-l border-border bg-panel" aria-label="Diagram inspector"><InspectorHeader eyebrow="DIAGRAM" title={definition.label} /><div className="grid gap-2 p-[18px] text-xs leading-6 text-muted-foreground">Diagram properties placeholder.<small className="text-[11px] text-[#98a2b3]">Appearance, text, and size will be configured here.</small></div></aside>;
 }
 
 function InspectorHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
-  return <header className="node-inspector__header"><span>{eyebrow}</span><h1>{title}</h1></header>;
+  return <header className="border-b border-[#edf0f3] px-[18px] pb-4 pt-5"><span className="text-[10px] font-bold tracking-[.1em] text-subtle-foreground">{eyebrow}</span><h1 className="mt-1.5 text-lg font-bold text-[#172033]">{title}</h1></header>;
 }

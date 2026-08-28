@@ -173,7 +173,7 @@ draw.io 只作为连接点、方向箭头和吸附交互的行为参考；项目
 4. 新增 Edge 时使用 `useEdgesState` 的 setter 和 `addEdge`，不要直接修改原数组。
 5. 如果修改 Node 或 Edge 的数据结构，需要同步更新本文件和相关 TypeScript 类型。
 6. 连接数据目前只存在内存中。如果以后接入保存功能，应在 Workspace 或更高层统一管理序列化，不要让单个节点组件直接调用 API。
-7. 完成修改后至少运行 `pnpm typecheck`、`pnpm lint` 和 `pnpm build`。
+7. 完成修改后至少运行 `npm run typecheck`、`npm run lint` 和 `npm run build`。
 
 ## 8. 放置取消和删除交互
 
@@ -196,8 +196,9 @@ Node Library 选择项目后，`placementItem` 非空，Canvas 会显示跟随�
 在项目根目录运行：
 
 ```powershell
-pnpm typecheck
-pnpm lint
-pnpm build
+npm run typecheck
+npm run lint
+npm run build
+npm run test:styles
 git diff --check
 ```
