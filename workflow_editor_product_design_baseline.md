@@ -1,7 +1,7 @@
 # Workflow Editor 产品设计基线
 ## Visual Business Workflow SaaS — Product Model & Editor Architecture
 
-> 版本：v0.3
+> 版本：v0.4
 > 状态：Draft / Design Baseline  
 > 用途：作为后续管理台、员工执行端、Workflow Editor、Toolbox、React Flow Node、Inspector、Workflow JSON、Execution Engine 与 AI 功能设计的统一基线。
 
@@ -195,6 +195,45 @@ AI-native authoring
 
 > **底层执行能力可以逐步接近 BPM 平台，但表层交互不能要求普通企业用户理解 BPMN 或编程语言。**
 
+进一步的产品定义：
+
+> **本产品是面向业务人员的 Visual Workflow Programming / No-Code Process Runtime。用户通过组合具有预定义执行语义的 Workflow Nodes，并使用 Connections 定义执行顺序、分支和数据关系，从而创建可以被 Workflow Engine 直接解释和运行的 Workflow Definition。**
+
+Workflow Editor 因此不是单纯的流程图编辑器。用户在 Canvas 上进行的操作，可以理解为通过可视化业务语言“编写”一个业务程序。
+
+从用户心智看：
+
+```text
+画 Workflow
+≈
+编写业务程序
+```
+
+从系统架构看：
+
+```text
+Workflow Definition
+≈
+Visual DSL / Executable Process Definition
+```
+
+因此产品不应被简单定义为“简化版 BPMN”。更准确的方向是：
+
+```text
+保留 BPM / Workflow Engine 的核心执行模型
++
+将复杂的低层流程原语封装成高层 Semantic Nodes
++
+使用普通业务语言完成配置
+```
+
+也就是：
+
+```text
+复杂度封装在 Node 内部
+而不是暴露给 Workflow Designer
+```
+
 ---
 
 # 3. 核心产品原则
@@ -298,6 +337,16 @@ Exception
 历史数据
 ```
 
+这里的 Design / Configure / Run 是 Editor 的工作视图，不等同于后文定义的产品生命周期 Design Time / Run Time。
+
+```text
+Design + Configure
+主要属于 Design Time
+
+Run View
+主要用于 Runtime Monitoring / Mock Runtime Visualization
+```
+
 ---
 
 ## 3.4 Canvas 负责“表达流程”
@@ -308,6 +357,14 @@ Canvas 主要回答：
 
 > **流程是什么？**
 
+更具体地说，Canvas 负责定义：
+
+```text
+Program Structure
++
+Control Flow
+```
+
 ---
 
 ## 3.5 Inspector 负责“节点如何运行”
@@ -315,6 +372,18 @@ Canvas 主要回答：
 右侧 Inspector 主要回答：
 
 > **这个 Node 怎么工作？**
+
+也就是：
+
+```text
+Canvas
+=
+Program Structure
+
+Inspector
+=
+Program Configuration
+```
 
 ---
 
@@ -378,10 +447,12 @@ CONFIGURATION
 
 ```text
 Layer 4
-EXECUTION
+EXECUTION VIEW
 ```
 
 展示 Workflow Instance 的运行状态。
+
+注意：第四层是 Editor / Management Console 对 Runtime 的可视化，不意味着可变 Runtime State 属于 Workflow Definition 本身。
 
 ---
 
@@ -426,7 +497,7 @@ Swimlane
 
 # 6. Workflow Layer
 
-Workflow Layer 中的 Node 才是真正的 Runtime Object。
+Workflow Layer 中的 Node 才是真正拥有执行语义的 Runtime Primitive Definition。
 
 推荐第一版核心 Node：
 
@@ -574,19 +645,19 @@ Rectangle → Parallel
 type + position
 ```
 
-推荐模型：
+推荐 Definition Model：
 
 ```text
-Node
+Node Definition
 │
 ├── Identity
 ├── Semantic Type
 ├── Capabilities
 ├── Configuration
 ├── Data Contract
-├── Connections
+├── Connections / Ports
 ├── Appearance
-└── Runtime State
+└── Metadata
 ```
 
 概念结构：
@@ -609,7 +680,7 @@ Node
   "inputs": [],
   "outputs": [],
   "appearance": {},
-  "runtime": {}
+  "metadata": {}
 }
 ```
 
@@ -622,6 +693,22 @@ capabilities
 非常重要。
 
 Node 不应该通过一个巨大统一 Schema 进行配置。
+
+同时需要明确：
+
+> **可变 Runtime State 不属于 immutable Workflow Version 中的 Node Definition。运行状态属于 Workflow Instance 中对应的 Node Execution / Step Execution。**
+
+例如：
+
+```text
+Node Definition
+Manager Approval
+
+≠
+
+Node Execution
+Manager Approval · Running · Instance #1024
+```
 
 ---
 
@@ -1169,6 +1256,16 @@ Approval  Process
 
 这类逻辑使用 Canvas Node。
 
+Workflow Edge 在这里不是普通绘图连线，而是：
+
+```text
+Execution Transition
+```
+
+也就是：
+
+> **当前 Node 完成后，Execution Engine 应该沿哪一条路径继续运行。**
+
 ---
 
 # 17. IF / ELSE
@@ -1456,6 +1553,12 @@ Employee Onboarding
 Run Employee Onboarding
 ```
 
+在 Visual Workflow Programming 心智模型中，Subflow 可以理解为：
+
+```text
+Reusable Function / Callable Process Module
+```
+
 ---
 
 # 24. Data Model
@@ -1472,6 +1575,18 @@ pv!amount
 ```text
 Workflow Data
 ```
+
+Workflow Data 在可执行模型中承担：
+
+```text
+Variables
++
+Process State
++
+Node-to-Node Data
+```
+
+但 UI 仍应优先使用业务语言，不向普通用户暴露编程术语。
 
 ---
 
@@ -1545,6 +1660,16 @@ Expression
 Formula
 ```
 
+Data Mapping 在产品本质上相当于 No-Code 编程中的变量传递，但用户层应保持：
+
+```text
+Previous Step Output
+→
+Current Step Input
+```
+
+这样的业务表达。
+
 ---
 
 # 28. Form Model
@@ -1578,6 +1703,16 @@ Incident Form
 ```
 
 Task Inspector 引用 Form。
+
+同时必须区分：
+
+```text
+Design Time
+定义 Form Schema / Fields / Rules
+
+Run Time
+员工或审批人在 Task Instance 中真正填写和提交 Form
+```
 
 ---
 
@@ -1637,6 +1772,7 @@ Capability Schema
 
 ```text
 Workflow Definition
+Workflow Version
 Workflow Instance
 Task Instance
 Execution Record
@@ -1677,6 +1813,16 @@ Version
 Publish
 More
 ```
+
+其中：
+
+```text
+Run Test
+=
+Design Time Dry Run / Simulation
+```
+
+它不应创建真实生产任务、发送真实通知或修改真实业务数据。
 
 以后：
 
@@ -1884,6 +2030,24 @@ Operations
 Other
 ```
 
+Connections 必须分为：
+
+```text
+Workflow Connection
+=
+Executable Transition
+```
+
+与：
+
+```text
+Diagram Arrow
+=
+Visual Annotation Only
+```
+
+两者不能因为视觉上都是线而混为同一对象。
+
 ---
 
 # 35. Canvas Node Content
@@ -1910,6 +2074,16 @@ Canvas = Summary
 Inspector = Full Configuration
 ```
 
+进一步可理解为：
+
+```text
+Canvas Node Card
+=
+Executable Component Summary
+```
+
+而不是员工真正执行任务时看到的 Task UI。
+
 ---
 
 # 36. Node Status
@@ -1934,6 +2108,20 @@ Failed
 Skipped
 Cancelled
 ```
+
+两类状态必须分别属于：
+
+```text
+Node Definition Design State
+```
+
+和：
+
+```text
+Node Execution Runtime State
+```
+
+不能共享同一个可变字段。
 
 ---
 
@@ -2001,7 +2189,7 @@ Consider adding error handling
 
 # 38. Execution Layer
 
-未来真实运行时应该直接 Overlay 到 Canvas。
+未来真实运行时应该可以 Overlay 到 Canvas。
 
 当前管理台概念原型不实现真实 Execution Engine，而是使用 Mock Runtime State 展示管理者在流程运行期间需要看到的信息。原型重点验证：
 
@@ -2049,6 +2237,8 @@ Logs
 Errors
 ```
 
+这里显示的是 Workflow Instance 中的 Node Execution，不是修改 Workflow Version 中的 Node Definition。
+
 ---
 
 # 39. Workflow Instance
@@ -2088,16 +2278,22 @@ Instance：
 
 ```text
 Workflow Definition
-流程模板，由运营人员或经理设计
+流程的逻辑容器与设计对象
+
+Workflow Draft
+当前可变的设计状态
 
 Workflow Version
-已发布的不可变版本
+已发布的不可变执行快照
 
 Workflow Instance
 某一次实际启动的流程
 
+Node Execution / Step Execution
+该次流程中某一个 Node 的实际执行状态
+
 Task Instance
-该次流程中分配给某个人或团队的具体任务
+该次流程中分配给某个人或团队的具体人工任务
 
 Execution Record
 任务执行过程中产生的表单、附件、评论、输入、输出、时间和操作记录
@@ -2107,15 +2303,33 @@ Execution Record
 
 ```text
 Workflow Definition
+        ↓ Edit
+Workflow Draft
         ↓ Publish
 Workflow Version
         ↓ Start
 Workflow Instance
-        ↓ Generate
+        ↓ Execute Nodes
+Node Executions
+        ↓ Human Node Generates
 Task Instances
         ↓ Execute
 Execution Records
 ```
+
+Workflow Instance 必须绑定：
+
+```text
+workflowVersionId
+```
+
+而不能只绑定：
+
+```text
+workflowId
+```
+
+这样才能保证后续发布新版本不会改变已经运行中的实例。
 
 当前原型只需要通过 Mock Data 模拟 Workflow Instance、Task Instance 和 Execution Record 的展示，不要求这些对象已经由真实后端创建。
 
@@ -2519,8 +2733,8 @@ Node-level permission 放后续。
 Workflow 需要：
 
 ```text
-Draft Version
-Published Version
+Workflow Draft
+Published Workflow Version
 ```
 
 用户编辑 Draft 不应该影响正在运行的 Instance。
@@ -2534,6 +2748,26 @@ v3
 ```
 
 运行中的实例绑定启动时版本。
+
+推荐生命周期：
+
+```text
+Published v3
+    ↓ Edit
+Draft based on v3
+    ↓ Modify / Validate / Test
+Publish
+    ↓
+Published v4
+```
+
+其中：
+
+```text
+v3
+```
+
+仍然保留，用于解释和继续运行所有已经绑定 v3 的旧 Workflow Instances。
 
 ---
 
@@ -2987,28 +3221,66 @@ Library 权限管理
 
 不要过度追求传统流程图图形。
 
+Node Visual 可以参考 UML Class / Object Diagram 的 Compartment 思路，但不复制传统 UML 外观：
+
+```text
+Identity
+────────────
+Key Configuration Summary
+────────────
+Output / Branch / Status Summary
+```
+
+结合 Mind Map 的轻量连接和快速扩展方式，使 Canvas 在大量 Node 下仍然保持可扫描性。
+
 例如：
 
 ```text
-┌─────────────────────────┐
-│ ✓ Approval              │
-│ Manager Approval        │
-│                         │
-│ Sales Manager           │
-│ Due: 2 days             │
-└─────────────────────────┘
+┌────────────────────────────┐
+│ ✓ APPROVAL        Manager  │
+│ Manager Approval           │
+├────────────────────────────┤
+│ Form · Purchase Review     │
+│ Due · 2 days               │
+├────────────────────────────┤
+│ Approve        Reject      │
+└────────────────────────────┘
 ```
 
-Condition 可以更突出 Branch：
+Node Name 应高于 Semantic Type 成为第一视觉层级。
+
+推荐视觉层级：
 
 ```text
-        Amount > 5000?
-           ◇
-        /     \
-      YES     NO
+Node Name
+>
+Semantic Type / Identity
+>
+Key Configuration Metadata
 ```
 
-但也可以设计为 modern workflow card。
+Condition 可以突出 Branch，但不强制使用传统大菱形：
+
+```text
+┌────────────────────────────┐
+│ ◇ CONDITION                │
+│ Amount Check               │
+├────────────────────────────┤
+│ Amount > 5000              │
+├──────────────┬─────────────┤
+│ YES          │ NO          │
+└──────────────┴─────────────┘
+```
+
+核心原则：
+
+```text
+统一 Card Shell
++
+不同 Semantic Identity
++
+Capability-driven Compartments
+```
 
 ---
 
@@ -3018,8 +3290,8 @@ Condition 可以更突出 Branch：
 
 ```text
 Compact
-Default
-Expanded
+Default / Standard
+Expanded / Detail
 ```
 
 Compact：
@@ -3028,13 +3300,33 @@ Compact：
 [ Approval ] Manager Review
 ```
 
-Default：
+主要用于快速理解流程结构，接近 Mind Map 浏览体验。
 
-显示负责人、时间等核心信息。
+Default / Standard：
 
-Expanded：
+显示：
 
-显示更多 Rules / Inputs / Outputs。
+```text
+Node Name
+Semantic Identity
+Owner / Assignment Summary
+1–2 个关键配置
+```
+
+Expanded / Detail：
+
+显示更多：
+
+```text
+Rules
+Inputs
+Outputs
+Timing
+Form Summary
+Branches
+```
+
+但即使 Expanded，也不应该复制完整 Inspector。
 
 ---
 
@@ -3067,11 +3359,13 @@ Lane permissions
 Lane analytics
 ```
 
+当 Lane 已经表达 Owner Context 时，Node 可以减少重复显示负责人，从而降低复杂跨部门流程的视觉密度。
+
 ---
 
 # 58. Node Internal State
 
-Node Design State：
+Node Definition 的 Design State：
 
 ```text
 Draft
@@ -3080,7 +3374,7 @@ Warning
 Error
 ```
 
-Runtime State：
+Node Execution 的 Runtime State：
 
 ```text
 Pending
@@ -3094,31 +3388,113 @@ Cancelled
 
 两个 State 不应该混在一起。
 
+推荐对象关系：
+
+```text
+Workflow Version
+└── Node Definition
+
+Workflow Instance
+└── Node Execution
+    └── Runtime State
+```
+
 ---
 
 # 59. Publish Model
 
+Publish 不是普通 Save，也不是把页面“公开”。
+
+Publish 的产品语义是：
+
+> **将当前可变的 Workflow Draft 经过 Validation 后冻结为一个可被 Execution Engine 使用的不可变 Workflow Version。**
+
 推荐流程：
 
 ```text
-Edit
+Edit Draft
+↓
+Save
 ↓
 Validate
 ↓
 Resolve Errors
 ↓
-Test Run
+Test Run / Dry Run
 ↓
 Publish
-```
-
-Publish 后形成：
-
-```text
+↓
 Immutable Published Version
 ```
 
-用户再次修改时创建新 Draft。
+其中：
+
+```text
+Save
+=
+保存当前设计内容
+```
+
+```text
+Publish
+=
+创建可以用于生产运行的 Workflow Version
+```
+
+因此：
+
+```text
+Save
+≠
+Publish
+```
+
+用户再次修改 Published Workflow 时，不直接修改已经发布的版本，而是：
+
+```text
+Published v3
+↓ Edit
+Draft based on v3
+↓ Modify
+Publish
+↓
+Published v4
+```
+
+已经使用 v3 启动的 Workflow Instances：
+
+```text
+继续绑定 v3
+```
+
+新启动的 Workflow Instances：
+
+```text
+使用当前 Active Published Version（例如 v4）
+```
+
+Publish 前 Validation：
+
+```text
+Errors
+→ Block Publish
+
+Warnings
+→ Allow Publish with notice
+
+Recommendations
+→ Optional improvement
+```
+
+Published Version 必须保留用于：
+
+```text
+Runtime consistency
+Audit
+Historical explanation
+Incident investigation
+Version comparison
+```
 
 ---
 
@@ -3191,7 +3567,7 @@ Outline
 最终产品模型：
 
 ```text
-Node Model
+Node Definition Model
 =
 Semantic Type
 +
@@ -3201,7 +3577,27 @@ Configuration
 +
 Data Contract
 +
+Connections
++
+Appearance
+```
+
+---
+
+```text
+Node Execution Model
+=
+Node Definition Reference
++
 Runtime State
++
+Resolved Input
++
+Output
++
+Timing
++
+Error / Logs
 ```
 
 ---
@@ -3291,7 +3687,7 @@ Runtime AI Node
 
 ```text
 中间
-流程是什么
+流程应该怎么走
 ```
 
 ```text
@@ -3301,7 +3697,7 @@ Runtime AI Node
 
 ```text
 顶部
-流程现在是什么状态
+当前 Draft / Version / Publish 状态是什么
 ```
 
 ```text
@@ -3332,20 +3728,57 @@ AI
 
 推荐构建：
 
-> **一个以业务语义 Node 为核心、以无限 Canvas 为表现层、以 Capability-based Config Blocks 为配置层、以 Workflow Context 为数据层、以 Runtime Engine 为执行层，并由 AI 贯穿创建—配置—验证—运行全过程的 Visual Business Workflow Editor。**
+> **一个面向业务人员的 Visual Workflow Programming / No-Code Process Runtime：以业务语义 Node 为核心、以无限 Canvas 为可视化编程表面、以 Capability-based Config Blocks 为配置层、以 Workflow Context 为数据层、以 Published Workflow Version 为可执行定义、以 Runtime Engine 为执行层，并由 AI 贯穿创建—配置—验证—运行全过程。**
 
 ---
 
-# 65. 下一阶段最应该冻结的三个模型
+# 65. 下一阶段最应该冻结的模型
 
-在继续大量开发 Toolbox 或增加 Node 前，应优先正式定义：
+在继续大量开发 Toolbox 或增加 Node 前，应优先正式定义以下模型。
 
-## 1. Node Schema
+## 1. Workflow Lifecycle Model
 
 回答：
 
 ```text
-一个 Node 到底由什么组成？
+Workflow 从设计到运行到底经历哪些对象和状态？
+```
+
+需要确定：
+
+```text
+Workflow Definition
+Workflow Draft
+Workflow Version
+Workflow Instance
+Node Execution
+Task Instance
+Execution Record
+```
+
+以及：
+
+```text
+Save
+Validate
+Test
+Publish
+Start
+Run
+Complete
+Archive
+```
+
+之间的关系。
+
+---
+
+## 2. Node Schema
+
+回答：
+
+```text
+一个 Node Definition 到底由什么组成？
 ```
 
 需要确定：
@@ -3359,15 +3792,16 @@ Capabilities
 Config
 Inputs
 Outputs
-Edges
+Ports
 Appearance
 Metadata
-Runtime
 ```
+
+Runtime State 不属于 immutable Node Definition。
 
 ---
 
-## 2. Capability Schema
+## 3. Capability Schema
 
 回答：
 
@@ -3391,7 +3825,7 @@ Output
 
 ---
 
-## 3. Inspector Config Block Schema
+## 4. Inspector Config Block Schema
 
 回答：
 
@@ -3413,13 +3847,42 @@ AI Modify
 
 ---
 
+## 5. Execution Object Model
+
+回答：
+
+```text
+一个 Workflow Version 在 Runtime 中如何变成实际工作？
+```
+
+需要确定：
+
+```text
+Workflow Instance
+Node Execution
+Task Instance
+Resolved Assignee
+Workflow Context
+Execution Record
+Runtime Event
+```
+
+---
+
 # 66. 推荐下一阶段设计顺序
 
 建议按以下顺序推进：
 
 ```text
+Stage 0
+Workflow Lifecycle / Design Time / Run Time Model
+```
+
+↓
+
+```text
 Stage A
-Node Schema
+Node Definition Schema
 ```
 
 ↓
@@ -3440,27 +3903,34 @@ Inspector Block Schema
 
 ```text
 Stage D
-Workflow Graph Schema
+Workflow Graph / Control Flow Schema
 ```
 
 ↓
 
 ```text
 Stage E
-Data Context / Mapping
+Workflow Context / Data Mapping
 ```
 
 ↓
 
 ```text
 Stage F
-Runtime / Execution State
+Publish / Version Model
 ```
 
 ↓
 
 ```text
 Stage G
+Runtime / Execution Object & State Model
+```
+
+↓
+
+```text
+Stage H
 AI Edit Protocol
 ```
 
@@ -3514,8 +3984,10 @@ Workflow Management Platform
 │
 ├── Workflow Engine
 │   ├── Workflow Definition
+│   ├── Workflow Draft
 │   ├── Workflow Version
 │   ├── Workflow Instance
+│   ├── Node Execution
 │   ├── Task Instance
 │   └── Execution Record
 │
@@ -3581,7 +4053,7 @@ Form Field
 +
 Data Mapping
 +
-Assignment
+Assignment Rule
 +
 Rule
 +
@@ -3601,3 +4073,905 @@ Execution Record
 ```
 
 这应该作为后续 Workflow Editor 产品设计和工程实现的统一基础。
+
+---
+
+# 68. Visual Workflow Programming / No-Code Process Runtime 详细模型
+
+## 68.1 Workflow 是可执行定义，不是流程图
+
+Workflow Editor 的核心产物不是 Canvas Screenshot，也不是 Diagram JSON，而是：
+
+```text
+Executable Workflow Definition
+```
+
+用户通过：
+
+```text
+Node
++
+Configuration
++
+Connection
++
+Workflow Data
+```
+
+共同定义一个可以执行的业务程序。
+
+推荐统一映射：
+
+```text
+Workflow Node
+=
+Predefined Execution Primitive / Instruction
+
+Workflow Edge
+=
+Execution Transition / Control Flow
+
+Workflow Data
+=
+Variables / Process State / Shared Context
+
+Data Mapping
+=
+Input / Output Binding
+
+Form
+=
+Human Input Interface Definition
+
+Condition
+=
+Control Logic
+
+Subflow
+=
+Reusable Function / Process Module
+
+Workflow Definition
+=
+Visual Program Definition
+
+Workflow Instance
+=
+Running Program Instance
+```
+
+这套映射只用于内部产品与架构理解，不要求直接把 Programming Terminology 暴露给普通用户。
+
+---
+
+## 68.2 Node 是预设执行逻辑的封装
+
+例如 Task Node 的内部语义可以理解为：
+
+```text
+Enter Task Node
+↓
+Resolve Assignee Rule
+↓
+Create Human Task Instance
+↓
+Wait for Completion
+↓
+Receive Form / Result
+↓
+Write Output to Workflow Context
+↓
+Complete Node Execution
+↓
+Follow Outgoing Transition
+```
+
+用户不需要自己组合这些低层步骤，只需要配置：
+
+```text
+Task Name
+Assignee Rule
+Form
+Input
+Completion Rule
+Timing
+Output
+```
+
+Approval Node 同理：
+
+```text
+Enter Approval
+↓
+Resolve Approver
+↓
+Create Approval Task
+↓
+Wait
+↓
+Receive Decision
+↓
+Produce Approval Result
+↓
+Follow corresponding branch
+```
+
+这就是 No-Code 的核心：
+
+```text
+High-level Semantic Node
+封装
+Low-level Execution Logic
+```
+
+---
+
+## 68.3 与 BPMN 的关系
+
+产品不需要要求用户理解完整 BPMN notation。
+
+推荐产品方向：
+
+```text
+BPM / Workflow execution depth
++
+High-level business semantic nodes
++
+Simplified visual authoring
+```
+
+例如传统 BPM 模型可能通过多个低层 primitive 表达：
+
+```text
+Human Task
++
+Decision
++
+Timer
++
+Routing
+```
+
+产品层可以封装成：
+
+```text
+Approval
+
+Approver
+Due
+Escalation
+Decisions
+On reject
+```
+
+因此：
+
+> **产品不是通过减少执行能力来“简化 BPMN”，而是通过高层 Node 把复杂执行能力封装起来。**
+
+---
+
+# 69. Design Time / Run Time 产品生命周期
+
+整个产品生命周期必须分成两个明确世界：
+
+```text
+DESIGN TIME
+定义系统以后应该怎么运行
+
+        ↓ Publish
+
+RUN TIME
+系统按照已发布定义真正运行
+```
+
+## 69.1 Design Time
+
+Design Time 回答：
+
+> **What should happen?**
+
+也就是：
+
+```text
+谁
+在什么条件下
+需要做什么
+使用什么数据
+产生什么结果
+完成后去哪里
+```
+
+Design Time 不直接产生真实业务操作。
+
+例如配置：
+
+```text
+Task
+Assignee = Irrigation Manager
+```
+
+此时只是创建：
+
+```text
+Assignment Rule
+```
+
+并没有给某个真实员工创建 Task Instance。
+
+---
+
+## 69.2 Run Time
+
+Run Time 回答：
+
+> **What is happening now?**
+
+当一个 Workflow Instance 启动以后，Execution Engine 才会：
+
+```text
+读取 Workflow Version
+↓
+创建 Workflow Context
+↓
+执行当前 Node
+↓
+解析实际负责人
+↓
+创建 Task / Approval / Action
+↓
+等待或执行
+↓
+记录结果
+↓
+沿 Edge 进入下一 Node
+```
+
+---
+
+## 69.3 Publish 是两个世界之间的边界
+
+```text
+Design Time
+
+Workflow Draft
+↓
+Validate
+↓
+Test
+↓
+Publish
+
+────────────────────────
+
+Run Time
+
+Published Workflow Version
+↓
+Start
+↓
+Workflow Instance
+↓
+Execution Engine
+```
+
+这应该成为系统最重要的生命周期边界之一。
+
+---
+
+# 70. Design Time 详细产品模型
+
+Design Time 的核心目标是：
+
+> **创建、配置、验证并发布一个 Executable Workflow Definition。**
+
+推荐拆成以下能力。
+
+## 70.1 Workflow Structure Authoring
+
+通过 Canvas 定义：
+
+```text
+Nodes
+Connections
+Branches
+Parallel Paths
+Merge
+Loops
+Subflows
+```
+
+产物是：
+
+```text
+Execution Graph / Control Flow Graph
+```
+
+---
+
+## 70.2 Node Selection
+
+通过 Node Toolbar / Node Library 选择预设的 Execution Primitive。
+
+Node Library 的作用不是提供“图形”，而是提供：
+
+```text
+Executable Capability Presets
+```
+
+---
+
+## 70.3 Node Configuration
+
+通过 Inspector 配置 Node Behavior：
+
+```text
+Assignment
+Form
+Input
+Output
+Rules
+Timing
+Notification
+Retry
+Escalation
+Exception
+Permissions
+```
+
+---
+
+## 70.4 Workflow Data Definition
+
+Design Time 需要允许定义和引用：
+
+```text
+Trigger Data
+Business Records
+Workflow Variables
+Previous Step Outputs
+User Context
+Environment
+```
+
+从而形成真正可执行的数据流，而不只是 A → B → C 的流程结构。
+
+---
+
+## 70.5 Data Mapping
+
+需要明确：
+
+```text
+Previous Node Output
+        ↓
+Current Node Input
+```
+
+例如：
+
+```text
+Approval.Request
+←
+Task.Output
+```
+
+普通用户通过 Data Picker 完成，不要求写代码。
+
+---
+
+## 70.6 Form Definition
+
+Design Time 配置：
+
+```text
+Fields
+Validation
+Default Values
+Visibility Rules
+Attachments
+Required Fields
+```
+
+Run Time 才真正产生：
+
+```text
+Form Submission
+```
+
+---
+
+## 70.7 Assignment Definition
+
+Design Time 保存的是：
+
+```text
+Assignment Rule
+```
+
+例如：
+
+```text
+Role = Irrigation Manager
+```
+
+而 Run Time 才解析成：
+
+```text
+Actual Assignee = Zhang San
+```
+
+因此：
+
+```text
+Design-time Assignee Rule
+≠
+Runtime Actual Assignee
+```
+
+---
+
+## 70.8 Validation
+
+Publish 前必须检查：
+
+```text
+Graph validity
+Required configuration
+Branch completeness
+Data mapping
+Assignment
+Forms
+Loops
+Dead ends
+Unreachable nodes
+```
+
+---
+
+## 70.9 Test / Dry Run
+
+Test Run 属于 Design Time。
+
+可以模拟：
+
+```text
+Input Data
+↓
+Which branch is selected
+↓
+Which node would execute next
+↓
+Expected output / validation
+```
+
+但默认不应该：
+
+```text
+Create production employee tasks
+Send real notifications
+Modify production records
+Call destructive integrations
+```
+
+---
+
+## 70.10 Save / Publish
+
+```text
+Save Draft
+=
+保存当前编辑状态
+```
+
+```text
+Publish
+=
+生成不可变的可执行 Workflow Version
+```
+
+这两个操作必须保持清晰区别。
+
+---
+
+# 71. Runtime / Work Distribution Model
+
+Workflow 发布并启动后，真正产生员工工作的过程由 Runtime 完成。
+
+例如 Definition：
+
+```text
+Prepare Material
+↓
+Manager Approval
+↓
+Irrigation Work
+↓
+Inspection
+```
+
+当 Instance 执行到 `Prepare Material`：
+
+```text
+Execution Engine
+↓
+Resolve Assignee
+↓
+Create Task Instance
+↓
+Employee App receives task
+```
+
+员工完成后：
+
+```text
+Employee submits result
+↓
+Task Instance Completed
+↓
+Node Execution Completed
+↓
+Workflow Context Updated
+↓
+Follow outgoing Edge
+↓
+Manager Approval starts
+```
+
+所以：
+
+> **Workflow Canvas 定义的是“如何产生和推进工作”，Employee App 承载的是“被产生出来的实际工作”。**
+
+---
+
+## 71.1 Employee App
+
+员工主要看到：
+
+```text
+My Tasks
+Task Instructions
+Form
+Attachments
+Due Date
+Comments
+Submit / Complete
+History
+```
+
+员工不需要理解：
+
+```text
+Workflow Graph
+Node Type
+Data Mapping
+Capability Schema
+Versioning
+Execution Engine
+```
+
+---
+
+## 71.2 Management Console
+
+管理者主要回答：
+
+```text
+当前有哪些 Workflow Instances？
+现在执行到哪里？
+谁正在负责？
+什么已经完成？
+什么超时或失败？
+是否需要重新分配或人工干预？
+```
+
+Management Console 和 Employee App 是同一个 Runtime Model 的不同 View。
+
+```text
+Employee App
+→ What do I need to do?
+
+Management Console
+→ What is happening?
+```
+
+---
+
+# 72. Workflow Definition / Version / Instance 关系
+
+推荐固定以下对象层级：
+
+```text
+Workflow
+│
+├── Draft
+│
+└── Versions
+    ├── v1
+    │   ├── Instance 001
+    │   └── Instance 002
+    │
+    ├── v2
+    │   └── Instance 003
+    │
+    └── v3 ← Active Published Version
+        ├── Instance 004
+        └── Instance 005
+```
+
+对象定义：
+
+```text
+Workflow
+业务流程的长期身份和容器
+
+Workflow Draft
+当前正在编辑的可变状态
+
+Workflow Version
+Publish 后形成的不可变执行定义
+
+Workflow Instance
+某一次基于特定 Version 的实际运行
+
+Node Execution
+某个 Node Definition 在该 Instance 中的一次执行
+
+Task Instance
+Human Node 产生的真实工作项
+
+Execution Record
+执行过程中形成的记录与审计证据
+```
+
+---
+
+## 72.1 Version Binding
+
+每个 Workflow Instance 必须记录：
+
+```text
+workflowId
+workflowVersionId
+```
+
+例如：
+
+```text
+Instance #001
+Workflow = Drip Irrigation
+Version = v2
+```
+
+即使后来已经发布 v5，Instance #001 仍然按照 v2 继续运行和解释。
+
+---
+
+## 72.2 为什么 Published Version 必须 Immutable
+
+如果运行中的 Instance 会随着 Editor 保存自动改变：
+
+```text
+正在运行的流程路径可能突然变化
+等待中的 Node 可能消失
+新增审批可能插入旧流程
+审计无法解释历史行为
+```
+
+所以：
+
+```text
+Editing Draft
+不得直接修改
+Published Version
+```
+
+---
+
+# 73. Node Definition 与 Runtime Object 的严格边界
+
+未来数据模型应避免把 Design Time 与 Runtime 混在同一个 Node Object 中。
+
+推荐：
+
+```text
+NodeDefinition
+{
+  id,
+  type,
+  config,
+  inputs,
+  outputs,
+  capabilities,
+  appearance
+}
+```
+
+Runtime：
+
+```text
+NodeExecution
+{
+  id,
+  workflowInstanceId,
+  nodeDefinitionId,
+  status,
+  resolvedInputs,
+  outputs,
+  startedAt,
+  completedAt,
+  error
+}
+```
+
+Human Node 可以继续产生：
+
+```text
+TaskInstance
+{
+  nodeExecutionId,
+  assignee,
+  status,
+  dueAt,
+  formSubmission
+}
+```
+
+这层分离对以下能力非常重要：
+
+```text
+Versioning
+Audit
+Retry
+Runtime Monitoring
+Historical Analysis
+Migration
+Testing
+```
+
+---
+
+# 74. 推荐系统主链路
+
+整个系统可以统一理解为：
+
+```text
+                 DESIGN TIME
+
+                Workflow Editor
+                       │
+                       ↓
+                Workflow Draft
+                       │
+          ┌────────────┼────────────┐
+          │            │            │
+       Nodes         Edges        Data
+          │            │            │
+          └────────────┼────────────┘
+                       ↓
+                   Validate
+                       ↓
+                    Test
+                       ↓
+                   Publish
+                       ↓
+              Workflow Version
+
+────────────────────────────────────────
+
+                  RUN TIME
+
+              Workflow Version
+                       ↓
+                    Start
+                       ↓
+              Workflow Instance
+                       ↓
+                Execution Engine
+                       ↓
+        ┌──────────────┼──────────────┐
+        ↓              ↓              ↓
+   Human Task       Automation      Decision
+        ↓              ↓              ↓
+  Employee App      Systems         Engine
+        │
+        ↓
+  User completes work
+        │
+        ↓
+  Task Instance Completed
+        │
+        ↓
+  Node Execution Completed
+        │
+        ↓
+  Follow outgoing transition
+        │
+        ↓
+  Execute next Node
+```
+
+这条主链路应成为后续工程设计、数据模型和 UI 设计共同依赖的基础。
+
+---
+
+# 75. 产品术语基线
+
+为了避免后续设计和代码讨论出现歧义，推荐统一以下术语。
+
+| Term | 推荐含义 |
+| --- | --- |
+| Workflow | 一个业务流程的长期逻辑容器 |
+| Workflow Draft | 当前可编辑的 Workflow Definition 状态 |
+| Workflow Version | Publish 后不可变的执行定义快照 |
+| Workflow Instance | 某一次真实流程运行 |
+| Node Definition | Design Time 中定义的可执行步骤 |
+| Node Execution | Runtime 中某个 Node 的一次实际执行 |
+| Task Instance | Human Node 在 Runtime 中生成的真实员工工作 |
+| Workflow Context | Instance 运行过程中的共享数据上下文 |
+| Execution Record | 执行历史、输入输出、表单、附件、时间与审计记录 |
+| Edge / Transition | Node 之间的可执行 Control Flow |
+| Diagram Arrow | 不参与执行的视觉关系 |
+| Assignment Rule | Design Time 的负责人解析规则 |
+| Actual Assignee | Runtime 解析出的真实负责人 |
+| Test Run | Design Time Dry Run / Simulation |
+| Publish | 将 Draft 冻结为可执行 Workflow Version |
+
+需要避免含糊使用：
+
+```text
+Node
+```
+
+在架构讨论中最好明确是：
+
+```text
+Node Definition
+```
+
+还是：
+
+```text
+Node Execution
+```
+
+同样：
+
+```text
+Task
+```
+
+需要区分：
+
+```text
+Task Node Definition
+```
+
+和：
+
+```text
+Task Instance
+```
+
+---
+
+# 76. 本次细化后的核心产品判断
+
+经过本次模型细化，后续设计应统一遵循以下判断：
+
+1. Workflow Editor 是 Design Time Authoring Environment，不是员工执行工作的界面。
+2. Workflow Definition 是可执行的 Visual Process Program，不是普通 Diagram。
+3. Workflow Node 是预定义 Execution Logic 的高层业务封装。
+4. Workflow Edge 是 Execution Transition，不只是视觉连线。
+5. Canvas 负责 Program Structure，Inspector 负责 Program Configuration。
+6. Workflow Data / Data Mapping 是可执行流程不可缺少的一等能力。
+7. Design Time 保存 Assignment Rule，Run Time 才解析 Actual Assignee。
+8. Form Definition 属于 Design Time，Form Submission 属于 Run Time。
+9. Save Draft 与 Publish 必须是两个不同动作。
+10. Published Workflow Version 必须 Immutable。
+11. Workflow Instance 必须绑定启动时使用的 Workflow Version。
+12. Node Definition 与 Node Execution 必须分离。
+13. Employee App 执行 Runtime 产生的 Task Instances，而不是直接“执行 Canvas Node”。
+14. Management Console 和 Employee App 共享同一个 Workflow Runtime Model，但服务不同用户视角。
+15. 产品对 BPMN 的简化应通过 Semantic Node Encapsulation 实现，而不是通过削弱 Runtime 能力实现。
+
+这些判断作为后续 Task Node、Approval Node、Condition Node、Node Visual、Inspector Schema、Publish、Runtime 与 Employee App 设计的上位约束。
