@@ -1,15 +1,11 @@
 import { ReactFlowProvider } from "@xyflow/react";
 import { EditorHeader } from "./components/EditorHeader";
 import { WorkflowEditorWorkspace } from "./components/WorkflowEditorWorkspace";
-import "./styles/workflow-editor.css";
-import "./styles/workflow-canvas.css";
-import "./styles/node-library.css";
-import "./styles/inspector.css";
 
-// 页面入口：提供 React Flow 上下文，并加载编辑器的四组样式。
+// 页面入口只组装编辑器；样式顺序由 main.tsx 统一管理。
 export function WorkflowEditorPage() {
   return (
-    <main className="workflow-editor" aria-label="Workflow editor">
+    <main className="flex h-dvh w-full flex-col overflow-hidden bg-app-background text-foreground" aria-label="Workflow editor">
       <EditorHeader />
       <ReactFlowProvider>
         <WorkflowEditorWorkspace />

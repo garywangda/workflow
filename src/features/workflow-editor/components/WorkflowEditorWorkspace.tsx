@@ -26,7 +26,7 @@ export function WorkflowEditorWorkspace() {
   useEditorToolShortcuts(handleEditorToolChange);
 
   return (
-    <section className="workflow-editor__workspace" aria-label="Editor workspace">
+    <section className="flex min-h-0 flex-1 overflow-hidden" aria-label="Editor workspace">
       <NodeLibrary placementItem={placementItem} onPlacementItemChange={handlePlacementItemChange} />
       <WorkflowCanvas activeEditorTool={activeEditorTool} placementItem={placementItem} onEditorToolChange={handleEditorToolChange} onPlacementItemChange={handlePlacementItemChange} />
       <NodeInspector />
