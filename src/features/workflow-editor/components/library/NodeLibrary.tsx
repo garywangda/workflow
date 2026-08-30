@@ -2,6 +2,12 @@ import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+
 import { ACTION_PRESETS } from "../../config/action-presets";
 import { DIAGRAM_ELEMENT_DEFINITIONS, DIAGRAM_ELEMENT_LIBRARY_ORDER } from "../../config/diagram-element-definitions";
 import { WORKFLOW_NODE_DEFINITIONS, WORKFLOW_NODE_LIBRARY_ORDER } from "../../config/workflow-node-definitions";
@@ -25,10 +31,10 @@ interface LibraryButtonProps {
 
 function LibraryButton({ label, description, icon: Icon, active, onClick }: LibraryButtonProps) {
   return (
-    <button className="node-library__item" type="button" data-active={active ? "true" : "false"} onClick={onClick} title={description}>
+    <Button className="node-library__item" variant="ghost" type="button" data-active={active ? "true" : "false"} onClick={onClick} title={description}>
       <Icon size={16} strokeWidth={1.8} aria-hidden="true" />
       <span>{label}</span>
-    </button>
+    </Button>
   );
 }
 
@@ -58,46 +64,50 @@ export function NodeLibrary({ placementItem, onPlacementItemChange }: NodeLibrar
         <span className="node-library__title">Node Library</span>
         <span className="node-library__hint">Click to place</span>
       </div>
-      <label className="node-library__search">
+      <div className="node-library__search">
         <Search size={15} aria-hidden="true" />
-        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search nodes..." aria-label="Search nodes" />
-      </label>
+        <Input className="node-library__search-input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search nodes..." aria-label="Search nodes" />
+      </div>
 
-      {favoriteItems.length > 0 ? (
-        <LibrarySection title="Favorites">
-          {favoriteItems.map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
-        </LibrarySection>
-      ) : null}
+      <ScrollArea className="node-library__scroll-area">
+        <div className="node-library__scroll-content">
+          {favoriteItems.length > 0 ? (
+            <LibrarySection title="Favorites">
+              {favoriteItems.map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
+            </LibrarySection>
+          ) : null}
 
-      <div className="node-library__divider" />
-      <span className="node-library__group-label">Workflow</span>
-      <LibrarySection title="Start & Events">
-        {workflowByCategory("event").map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
-      </LibrarySection>
-      <LibrarySection title="People">
-        {workflowByCategory("human").map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
-      </LibrarySection>
-      <LibrarySection title="Logic">
-        {workflowByCategory("logic").map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
-      </LibrarySection>
-      <LibrarySection title="Automation">
-        {actionItems.map((presetId) => {
-          const preset = ACTION_PRESETS[presetId];
-          return <LibraryButton key={presetId} label={preset.label} description={preset.description} icon={preset.icon} active={active({ kind: "action-preset", presetId })} onClick={() => onPlacementItemChange({ kind: "action-preset", presetId })} />;
-        })}
-      </LibrarySection>
-      <LibrarySection title="Structure">
-        {workflowByCategory("end").map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
-      </LibrarySection>
+          <Separator className="node-library__divider" />
+          <span className="node-library__group-label">Workflow</span>
+          <LibrarySection title="Start & Events">
+            {workflowByCategory("event").map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
+          </LibrarySection>
+          <LibrarySection title="People">
+            {workflowByCategory("human").map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
+          </LibrarySection>
+          <LibrarySection title="Logic">
+            {workflowByCategory("logic").map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
+          </LibrarySection>
+          <LibrarySection title="Automation">
+            {actionItems.map((presetId) => {
+              const preset = ACTION_PRESETS[presetId];
+              return <LibraryButton key={presetId} label={preset.label} description={preset.description} icon={preset.icon} active={active({ kind: "action-preset", presetId })} onClick={() => onPlacementItemChange({ kind: "action-preset", presetId })} />;
+            })}
+          </LibrarySection>
+          <LibrarySection title="Structure">
+            {workflowByCategory("end").map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
+          </LibrarySection>
 
-      <div className="node-library__divider" />
-      <span className="node-library__group-label">Diagram</span>
-      <LibrarySection title="Shapes">
-        {diagramItems.filter((type) => ["rectangle", "circle", "diamond"].includes(type)).map((type) => <DiagramLibraryButton key={type} type={type} active={active({ kind: "diagram", type })} onSelect={() => onPlacementItemChange({ kind: "diagram", type })} />)}
-      </LibrarySection>
-      <LibrarySection title="Annotation">
-        {diagramItems.filter((type) => ["text", "note"].includes(type)).map((type) => <DiagramLibraryButton key={type} type={type} active={active({ kind: "diagram", type })} onSelect={() => onPlacementItemChange({ kind: "diagram", type })} />)}
-      </LibrarySection>
+          <Separator className="node-library__divider" />
+          <span className="node-library__group-label">Diagram</span>
+          <LibrarySection title="Shapes">
+            {diagramItems.filter((type) => ["rectangle", "circle", "diamond"].includes(type)).map((type) => <DiagramLibraryButton key={type} type={type} active={active({ kind: "diagram", type })} onSelect={() => onPlacementItemChange({ kind: "diagram", type })} />)}
+          </LibrarySection>
+          <LibrarySection title="Annotation">
+            {diagramItems.filter((type) => ["text", "note"].includes(type)).map((type) => <DiagramLibraryButton key={type} type={type} active={active({ kind: "diagram", type })} onSelect={() => onPlacementItemChange({ kind: "diagram", type })} />)}
+          </LibrarySection>
+        </div>
+      </ScrollArea>
     </aside>
   );
 }

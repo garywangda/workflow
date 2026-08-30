@@ -1,4 +1,7 @@
-import { useEffect } from "react";
+import { useState } from "react";
+
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 interface WorkflowDeleteDialogProps {
   nodeCount: number;
@@ -9,32 +12,40 @@ interface WorkflowDeleteDialogProps {
 
 /** 删除确认窗口；Escape 只取消，不把 Enter 注册为删除快捷键。 */
 export function WorkflowDeleteDialog({ nodeCount, edgeCount, onCancel, onConfirm }: WorkflowDeleteDialogProps) {
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onCancel();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onCancel]);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const targetLabel = nodeCount === 1 ? "this node" : `${nodeCount} selected nodes`;
   const connectedEdgeLabel = edgeCount > 0 || nodeCount > 0 ? " Any connected edges will also be removed." : "";
 
+  const handleConfirm = async () => {
+    setIsConfirming(true);
+    setError(null);
+    try {
+      await onConfirm();
+    } catch {
+      setError("The selection could not be deleted. Please try again.");
+      setIsConfirming(false);
+    }
+  };
+
   return (
-    <div className="workflow-delete-dialog" role="presentation">
-      <div className="workflow-delete-dialog__backdrop" aria-hidden="true" />
-      <section className="workflow-delete-dialog__panel" role="dialog" aria-modal="true" aria-labelledby="workflow-delete-dialog-title">
-        <h2 id="workflow-delete-dialog-title">Delete {targetLabel}?</h2>
-        <p>This action cannot be undone.{connectedEdgeLabel}</p>
-        <div className="workflow-delete-dialog__actions">
-          <button type="button" onClick={onCancel}>Cancel</button>
-          <button className="workflow-delete-dialog__confirm" type="button" onClick={onConfirm}>Delete</button>
-        </div>
-      </section>
-    </div>
+    <AlertDialog open onOpenChange={(open) => { if (!open && !isConfirming) onCancel(); }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete {targetLabel}?</AlertDialogTitle>
+          <AlertDialogDescription>This action cannot be undone.{connectedEdgeLabel}</AlertDialogDescription>
+          {error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel asChild><Button variant="outline" disabled={isConfirming}>Cancel</Button></AlertDialogCancel>
+          <AlertDialogAction asChild>
+            <Button variant="destructive" disabled={isConfirming} aria-busy={isConfirming} onClick={(event) => { event.preventDefault(); void handleConfirm(); }}>
+              {isConfirming ? "Deleting…" : "Delete"}
+            </Button>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

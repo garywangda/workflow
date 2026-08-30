@@ -7,8 +7,9 @@ export function EditorTools({ activeEditorTool, onEditorToolChange }: { activeEd
     <div className="editor-tools" role="toolbar" aria-label="Editor tools">
       {EDITOR_TOOLS.map((tool) => {
         const Icon = tool.icon;
-        return <button key={tool.id} className="editor-tools__button" type="button" aria-label={tool.ariaLabel} aria-pressed={activeEditorTool === tool.id} data-active={activeEditorTool === tool.id ? "true" : "false"} title={`${tool.label} (${tool.shortcut})`} onClick={() => onEditorToolChange(tool.id)}><Icon size={17} strokeWidth={1.9} /></button>;
+        return <AppIconButton key={tool.id} className="editor-tools__button" label={tool.ariaLabel} tooltip={`${tool.label} (${tool.shortcut})`} type="button" aria-pressed={activeEditorTool === tool.id} data-active={activeEditorTool === tool.id ? "true" : "false"} onClick={() => onEditorToolChange(tool.id)}><Icon size={17} strokeWidth={1.9} aria-hidden="true" /></AppIconButton>;
       })}
     </div>
   );
 }
+import { AppIconButton } from "@/components/app/AppIconButton";

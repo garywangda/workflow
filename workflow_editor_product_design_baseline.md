@@ -1,7 +1,7 @@
 # Workflow Editor 产品设计基线
 ## Visual Business Workflow SaaS — Product Model & Editor Architecture
 
-> 版本：v0.2
+> 版本：v0.3
 > 状态：Draft / Design Baseline  
 > 用途：作为后续管理台、员工执行端、Workflow Editor、Toolbox、React Flow Node、Inspector、Workflow JSON、Execution Engine 与 AI 功能设计的统一基线。
 
@@ -2738,78 +2738,245 @@ UI density
 
 ---
 
-# 54. Toolbox 设计建议
+# 54. Node Toolbar 与 Node Library
 
-左侧推荐：
+## 54.1 产品定义
+
+Node Toolbar 是专门用于添加 Workflow Node 的一级入口，不是通用 Canvas 编辑工具栏，也不是直接罗列所有具体节点的完整节点库。
+
+它主要回答：
+
+> **用户现在想添加哪一类流程职责？**
+
+Node Library 是选择具体节点能力的二级界面，主要回答：
+
+> **这个节点具体要做什么事情？**
+
+两者共同形成以下添加流程：
 
 ```text
-Search nodes...
+选择 Node Type
+→
+在 Node Library 选择具体能力
+→
+节点预览跟随鼠标
+→
+点击 Canvas 放置节点
+→
+节点被选中并打开右侧 Inspector
+```
 
-FAVORITES
-Task
-Approval
-Condition
-Action
+这一模型将稳定的流程语义与持续扩展的业务能力分开：
 
-WORKFLOW
-────────────
+```text
+Node Toolbar
+=
+稳定、少量、按流程职责分类的 Semantic Type
 
-START & EVENTS
+Node Library
+=
+可搜索、可扩展、按具体行为组织的 Node Definition / Preset
+```
+
+---
+
+## 54.2 Node Toolbar 一级类型
+
+第一阶段建议包含：
+
+```text
 Trigger
-
-PEOPLE
-Task
+Human Task
 Approval
-Form
-
-LOGIC
-Condition
-Switch
-Parallel
-Merge
+Action
+Logic
 Wait
-For Each
-
-AUTOMATION
-Create Record
-Update Record
-Send Message
-HTTP Request
-AI
-
-STRUCTURE
-Subflow
 End
-
-DIAGRAM
-────────────
-
-Shapes
-Rectangle
-Circle
-Diamond
-
-Organization
-Group
-Swimlane
-
-Annotation
-Text
-Note
 ```
 
-注意：
+每个一级类型表示节点在流程中的职责，而不是某个具体动作：
+
+| Node Type | 用户心智 | Node Library 示例 |
+| --- | --- | --- |
+| Trigger | 流程何时开始 | Manual trigger、Schedule、Form submitted、Webhook received |
+| Human Task | 需要人完成什么工作 | Complete task、Fill form、Upload documents |
+| Approval | 谁需要作出审批决定 | Single approver、Any approver、All approvers |
+| Action | 系统自动执行什么操作 | Send email、Update record、Create task、HTTP request |
+| Logic | 流程如何判断或分流 | If / Else、Multi-branch、Parallel、Merge |
+| Wait | 流程需要等待什么 | Wait for duration、Wait until date、Wait for event |
+| End | 流程以什么结果结束 | Success、Rejected、Cancelled、Failed |
+
+一级类型需要保持数量有限和语义稳定。新增第三方应用、集成动作或业务模板时，原则上应扩展 Node Library，而不是不断增加 Toolbar 图标。
+
+---
+
+## 54.3 Node Library 的作用
+
+用户点击 Node Toolbar 中的类型后，在其旁边展开对应的 Node Library 面板。面板建议包含：
 
 ```text
-Create Record
+当前 Node Type 名称
+Search
+Recommended / Recent（后续能力）
+具体节点列表
+节点来源和可用状态
+```
+
+每个具体节点条目第一阶段显示：
+
+```text
+Icon
+Name
+One-line description
+Source / Provider
+Availability status（仅在需要时）
+```
+
+例如：
+
+```text
+Send email
+Send a customized email to selected recipients
+Email · Connection required
+```
+
+Node Library 只负责选择节点要执行的能力，不在这个阶段要求用户填写负责人、审批规则、条件表达式、邮件内容或数据映射。具体配置统一在节点放置后的右侧 Inspector 完成。
+
+---
+
+## 54.4 添加交互与状态规则
+
+添加节点需要具有明确、可撤销的状态：
+
+```text
+Idle
+→ Select Node Type
+→ Node Library Open
+→ Select Concrete Node
+→ Node Attached to Cursor
+→ Place on Canvas
+→ Node Created and Selected
+```
+
+交互规则：
+
+- 点击 Toolbar 类型后打开对应 Library；点击其他类型时直接切换 Library 内容。
+- 点击具体节点后关闭 Library，并进入当前已有的鼠标跟随放置状态。
+- 点击 Canvas 后创建一个节点，默认退出放置模式，并打开该节点的 Inspector。
+- 按 `Esc` 逐级退出当前状态：优先取消鼠标携带，其次关闭 Node Library。
+- 再次点击当前激活的 Toolbar 类型，可以关闭 Node Library。
+- 点击 Library 外部时可以关闭 Library，但不得删除或修改 Canvas 上已有内容。
+- 第一阶段不默认连续添加同类节点，避免误操作；连续添加可作为后续显式模式。
+- 需要账号连接或高级配置的节点允许先放置，再通过 Inspector 完成配置。
+- 未完成配置的节点可以保留在 Draft 中，但应显示配置状态，并在 Publish Validation 中提示。
+
+---
+
+## 54.5 与 Canvas Tools 的边界
+
+以下功能不属于 Node Toolbar：
+
+```text
+Select
+Hand / Pan
+Connect
+Delete
+Undo / Redo
+Text / Note
+Zoom / Fit View
+```
+
+它们属于 Canvas Tools 或 Diagram Tools，用于操作画布和已有对象。
+
+因此编辑器左侧需要建立清晰的产品边界：
+
+```text
+Node Toolbar
+→ 添加什么 Workflow Node
+
+Canvas Tools
+→ 如何操作 Canvas 和已有对象
+
+Diagram Tools
+→ 添加不参与 Runtime 的说明与组织元素
+```
+
+Node Toolbar 不应同时承担选择、移动、连线、删除和缩放等职责。
+
+---
+
+## 54.6 Node Type、Library Item 与 Engine Type
+
+界面中的具体节点条目不一定等于新的底层 Engine Node Type。
+
+例如：
+
+```text
+Send Email
 Update Record
 HTTP Request
 ```
 
-只是：
+在 Node Library 中是不同的具体能力，但底层可以统一为：
 
 ```text
-Action Presets
+Engine Type = Action
+Preset = sendEmail / updateRecord / httpRequest
+```
+
+同样：
+
+```text
+Single Approver
+Any Approver
+All Approvers
+```
+
+可以统一使用：
+
+```text
+Engine Type = Approval
+Approval Policy = single / any / all
+```
+
+因此：
+
+```text
+Toolbar Node Type、Library Item 与 Engine Node Type 是三个不同层级
+Library Item 与 Engine Node Type 不要求一一对应
+```
+
+这个边界用于避免 Node Explosion，同时允许产品持续增加具体业务能力。
+
+---
+
+## 54.7 第一阶段范围
+
+概念原型优先验证：
+
+```text
+Toolbar 类型切换
+Node Library 展开与关闭
+Library 搜索
+具体节点选择
+鼠标跟随预览
+点击 Canvas 放置
+放置后自动选中
+Inspector 自动打开
+Esc 取消
+节点配置状态提示
+```
+
+第一阶段暂不实现：
+
+```text
+完整 Integration Marketplace
+用户自定义 Node Type
+组织级节点发布
+Library 权限管理
+复杂 Favorites 管理
+拖拽重排 Toolbar 类型
+连续批量放置模式
 ```
 
 ---

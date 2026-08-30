@@ -8,13 +8,13 @@ interface WorkflowContextMenuProps {
 export function WorkflowContextMenu({ x, y, onDelete }: WorkflowContextMenuProps) {
   return (
     <div
-      className="workflow-context-menu"
+      className="workflow-context-menu border-border! bg-popover! text-popover-foreground!"
       role="menu"
       aria-label="Node actions"
       style={{ left: x, top: y }}
       onContextMenu={(event) => event.preventDefault()}
     >
-      <button className="workflow-context-menu__item workflow-context-menu__item--danger" type="button" role="menuitem" onClick={onDelete}>
+      <button className="workflow-context-menu__item workflow-context-menu__item--danger text-destructive! focus:bg-accent!" type="button" role="menuitem" onClick={onDelete}>
         Delete node
       </button>
     </div>
