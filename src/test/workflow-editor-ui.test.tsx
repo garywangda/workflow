@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MousePointer2 } from "lucide-react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -15,15 +15,35 @@ describe("workflow editor shadcn boundaries", () => {
     expect(screen.getByRole("button", { name: "Select tool" })).toBeInTheDocument();
   });
 
-  it("keeps Node Library search and PlacementItem output unchanged", async () => {
+  it("shows only the seven workflow responsibility types initially", () => {
+    render(<NodeLibrary />);
+
+    const toolbar = screen.getByRole("navigation", { name: "Workflow node types" });
+    expect(within(toolbar).getAllByRole("button").map((button) => button.textContent)).toEqual([
+      "Trigger",
+      "Human Task",
+      "Approval",
+      "Action",
+      "Logic",
+      "Wait",
+      "End",
+    ]);
+    expect(screen.queryByRole("textbox", { name: "Search nodes" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Favorites")).not.toBeInTheDocument();
+  });
+
+  it("opens a placeholder in the same toolbar and restores focus on return", async () => {
     const user = userEvent.setup();
-    const onPlacementItemChange = vi.fn();
-    render(<NodeLibrary placementItem={null} onPlacementItemChange={onPlacementItemChange} />);
+    render(<NodeLibrary />);
 
-    await user.type(screen.getByRole("textbox", { name: "Search nodes" }), "http");
-    await user.click(screen.getByRole("button", { name: "HTTP Request" }));
+    await user.click(screen.getByRole("button", { name: "Action" }));
 
-    expect(onPlacementItemChange).toHaveBeenCalledWith({ kind: "action-preset", presetId: "httpRequest" });
+    expect(screen.queryByRole("navigation", { name: "Workflow node types" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Action" })).toHaveFocus();
+    expect(screen.getByText("Options for this node type will appear here.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Back" }));
+
+    expect(screen.getByRole("button", { name: "Action" })).toHaveFocus();
   });
 
   it("cancels the controlled delete dialog with Escape", async () => {

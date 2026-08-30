@@ -1,127 +1,115 @@
-import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
-import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { ArrowLeft } from "lucide-react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import { WORKFLOW_NODE_TOOLBAR_DEFINITIONS } from "@/features/workflow-editor/config/node-toolbar-definitions";
+import type { WorkflowNodeToolbarType } from "@/features/workflow-editor/types/node-toolbar";
 
-import { ACTION_PRESETS } from "../../config/action-presets";
-import { DIAGRAM_ELEMENT_DEFINITIONS, DIAGRAM_ELEMENT_LIBRARY_ORDER } from "../../config/diagram-element-definitions";
-import { WORKFLOW_NODE_DEFINITIONS, WORKFLOW_NODE_LIBRARY_ORDER } from "../../config/workflow-node-definitions";
-import type { ActionPresetId } from "../../types/action-preset";
-import type { DiagramElementType } from "../../types/diagram-element";
-import type { PlacementItem } from "../../types/placement";
-import type { WorkflowNodeType } from "../../types/workflow-node";
+export function NodeLibrary() {
+  const [selectedType, setSelectedType] = useState<WorkflowNodeToolbarType | null>(null);
+  const selectedTitleRef = useRef<HTMLHeadingElement>(null);
+  const toolbarButtonRefs = useRef<Partial<Record<WorkflowNodeToolbarType, HTMLButtonElement | null>>>({});
+  const restoreFocusTypeRef = useRef<WorkflowNodeToolbarType | null>(null);
 
-interface NodeLibraryProps {
-  placementItem: PlacementItem | null;
-  onPlacementItemChange: (item: PlacementItem) => void;
-}
-
-interface LibraryButtonProps {
-  label: string;
-  description: string;
-  icon: LucideIcon;
-  active: boolean;
-  onClick: () => void;
-}
-
-function LibraryButton({ label, description, icon: Icon, active, onClick }: LibraryButtonProps) {
-  return (
-    <Button className="node-library__item" variant="ghost" type="button" data-active={active ? "true" : "false"} onClick={onClick} title={description}>
-      <Icon size={16} strokeWidth={1.8} aria-hidden="true" />
-      <span>{label}</span>
-    </Button>
+  const selectedDefinition = WORKFLOW_NODE_TOOLBAR_DEFINITIONS.find(
+    (definition) => definition.type === selectedType,
   );
-}
 
-export function NodeLibrary({ placementItem, onPlacementItemChange }: NodeLibraryProps) {
-  // Library 只产生 PlacementItem，不直接创建 React Flow Node。
-  // 真正的节点实例由 WorkflowCanvas 调用 factory 创建，保证创建逻辑集中。
-  const [query, setQuery] = useState("");
-  const normalizedQuery = query.trim().toLowerCase();
-  const matches = (label: string, keywords: readonly string[], category: string) =>
-    !normalizedQuery || [label, category, ...keywords].some((value) => value.toLowerCase().includes(normalizedQuery));
+  useLayoutEffect(() => {
+    if (selectedType) {
+      selectedTitleRef.current?.focus();
+      return;
+    }
 
-  const favorites = useMemo(() => ["task", "approval", "condition", "action"] as const, []);
-  const favoriteItems = favorites.filter((type) => matches(WORKFLOW_NODE_DEFINITIONS[type].label, WORKFLOW_NODE_DEFINITIONS[type].keywords, "workflow"));
-  const workflowByCategory = (category: "event" | "human" | "logic" | "end") =>
-    WORKFLOW_NODE_LIBRARY_ORDER.filter((type) => WORKFLOW_NODE_DEFINITIONS[type].category === category && matches(WORKFLOW_NODE_DEFINITIONS[type].label, WORKFLOW_NODE_DEFINITIONS[type].keywords, WORKFLOW_NODE_DEFINITIONS[type].category));
-  const actionItems = (Object.keys(ACTION_PRESETS) as ActionPresetId[]).filter((presetId) => {
-    const preset = ACTION_PRESETS[presetId];
-    return matches(preset.label, preset.keywords, "automation");
-  });
-  const diagramItems = DIAGRAM_ELEMENT_LIBRARY_ORDER.filter((type) => matches(DIAGRAM_ELEMENT_DEFINITIONS[type].label, DIAGRAM_ELEMENT_DEFINITIONS[type].keywords, "diagram"));
+    const restoreFocusType = restoreFocusTypeRef.current;
+    if (restoreFocusType) {
+      toolbarButtonRefs.current[restoreFocusType]?.focus();
+      restoreFocusTypeRef.current = null;
+    }
+  }, [selectedType]);
 
-  const active = (item: PlacementItem) => JSON.stringify(placementItem) === JSON.stringify(item);
+  function openType(type: WorkflowNodeToolbarType) {
+    setSelectedType(type);
+  }
+
+  function returnToFirstLevel() {
+    restoreFocusTypeRef.current = selectedType;
+    setSelectedType(null);
+  }
 
   return (
-    <aside className="node-library" aria-label="Node library">
-      <div className="node-library__header">
-        <span className="node-library__title">Node Library</span>
-        <span className="node-library__hint">Click to place</span>
-      </div>
-      <div className="node-library__search">
-        <Search size={15} aria-hidden="true" />
-        <Input className="node-library__search-input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search nodes..." aria-label="Search nodes" />
-      </div>
+    <aside
+      aria-label="Node toolbar"
+      className="flex min-h-0 w-[232px] shrink-0 flex-col overflow-y-auto border-r border-border bg-panel px-3 pb-6 pt-4"
+    >
+      {selectedDefinition ? (
+        <section aria-labelledby="node-toolbar-placeholder-title" className="min-w-0">
+          <Button
+            className="-ml-1 mb-3 h-11 px-2 text-xs text-muted-foreground hover:text-foreground"
+            onClick={returnToFirstLevel}
+            type="button"
+            variant="ghost"
+          >
+            <ArrowLeft aria-hidden="true" />
+            Back
+          </Button>
 
-      <ScrollArea className="node-library__scroll-area">
-        <div className="node-library__scroll-content">
-          {favoriteItems.length > 0 ? (
-            <LibrarySection title="Favorites">
-              {favoriteItems.map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
-            </LibrarySection>
-          ) : null}
+          <div className="mb-4 flex min-w-0 items-center gap-2.5">
+            <span className="grid size-8 shrink-0 place-items-center rounded-md border border-border bg-muted/60 text-primary">
+              <selectedDefinition.icon aria-hidden="true" className="size-[18px]" />
+            </span>
+            <h2
+              className="min-w-0 truncate text-sm font-bold text-foreground outline-none"
+              id="node-toolbar-placeholder-title"
+              ref={selectedTitleRef}
+              tabIndex={-1}
+            >
+              {selectedDefinition.label}
+            </h2>
+          </div>
 
-          <Separator className="node-library__divider" />
-          <span className="node-library__group-label">Workflow</span>
-          <LibrarySection title="Start & Events">
-            {workflowByCategory("event").map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
-          </LibrarySection>
-          <LibrarySection title="People">
-            {workflowByCategory("human").map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
-          </LibrarySection>
-          <LibrarySection title="Logic">
-            {workflowByCategory("logic").map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
-          </LibrarySection>
-          <LibrarySection title="Automation">
-            {actionItems.map((presetId) => {
-              const preset = ACTION_PRESETS[presetId];
-              return <LibraryButton key={presetId} label={preset.label} description={preset.description} icon={preset.icon} active={active({ kind: "action-preset", presetId })} onClick={() => onPlacementItemChange({ kind: "action-preset", presetId })} />;
+          <div className="rounded-lg border border-dashed border-border-strong bg-muted/35 px-3 py-4">
+            <p className="text-xs font-semibold text-foreground">Node options coming next</p>
+            <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
+              {selectedDefinition.description}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              Options for this node type will appear here.
+            </p>
+          </div>
+        </section>
+      ) : (
+        <>
+          <header className="mx-1 mb-3 flex min-w-0 items-baseline justify-between gap-2">
+            <h2 className="min-w-0 truncate text-sm font-bold text-foreground">Node Toolbar</h2>
+            <span className="shrink-0 text-[10px] font-medium text-muted-foreground">Choose a type</span>
+          </header>
+
+          <nav aria-label="Workflow node types" className="grid gap-1">
+            {WORKFLOW_NODE_TOOLBAR_DEFINITIONS.map((definition) => {
+              const Icon = definition.icon;
+
+              return (
+                <Button
+                  className="group h-11 w-full justify-start gap-2.5 px-2 py-2 text-left text-xs font-semibold text-secondary-foreground hover:bg-muted hover:text-foreground focus-visible:ring-focus-ring/45 motion-reduce:transition-none"
+                  key={definition.type}
+                  onClick={() => openType(definition.type)}
+                  ref={(element) => {
+                    toolbarButtonRefs.current[definition.type] = element;
+                  }}
+                  type="button"
+                  variant="ghost"
+                >
+                  <span className="grid size-7 shrink-0 place-items-center rounded-md border border-border bg-muted/60 text-muted-foreground transition-colors group-hover:border-border-strong group-hover:bg-panel group-hover:text-primary motion-reduce:transition-none">
+                    <Icon aria-hidden="true" className="size-[18px]" />
+                  </span>
+                  <span className="min-w-0 truncate">{definition.label}</span>
+                </Button>
+              );
             })}
-          </LibrarySection>
-          <LibrarySection title="Structure">
-            {workflowByCategory("end").map((type) => <WorkflowLibraryButton key={type} type={type} active={active({ kind: "workflow-node", type })} onSelect={() => onPlacementItemChange({ kind: "workflow-node", type })} />)}
-          </LibrarySection>
-
-          <Separator className="node-library__divider" />
-          <span className="node-library__group-label">Diagram</span>
-          <LibrarySection title="Shapes">
-            {diagramItems.filter((type) => ["rectangle", "circle", "diamond"].includes(type)).map((type) => <DiagramLibraryButton key={type} type={type} active={active({ kind: "diagram", type })} onSelect={() => onPlacementItemChange({ kind: "diagram", type })} />)}
-          </LibrarySection>
-          <LibrarySection title="Annotation">
-            {diagramItems.filter((type) => ["text", "note"].includes(type)).map((type) => <DiagramLibraryButton key={type} type={type} active={active({ kind: "diagram", type })} onSelect={() => onPlacementItemChange({ kind: "diagram", type })} />)}
-          </LibrarySection>
-        </div>
-      </ScrollArea>
+          </nav>
+        </>
+      )}
     </aside>
   );
-}
-
-function LibrarySection({ title, children }: { title: string; children: ReactNode }) {
-  return <section className="node-library__section"><h2>{title}</h2><div className="node-library__items">{children}</div></section>;
-}
-
-function WorkflowLibraryButton({ type, active, onSelect }: { type: WorkflowNodeType; active: boolean; onSelect: () => void }) {
-  const definition = WORKFLOW_NODE_DEFINITIONS[type];
-  return <LibraryButton label={definition.label} description={definition.description} icon={definition.icon} active={active} onClick={onSelect} />;
-}
-
-function DiagramLibraryButton({ type, active, onSelect }: { type: DiagramElementType; active: boolean; onSelect: () => void }) {
-  const definition = DIAGRAM_ELEMENT_DEFINITIONS[type];
-  return <LibraryButton label={definition.label} description={definition.description} icon={definition.icon} active={active} onClick={onSelect} />;
 }
