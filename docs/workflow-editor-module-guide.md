@@ -78,11 +78,10 @@ WorkflowEditorPage
 
 - 顶部一级职责类别条：类别图标与 `Human task` 标签；类别色只表达语义，不表达配置结果。
 - 主体字段：具体节点名称、最多两行的简短描述，以及负责人（或系统节点的 Provider）。
-- 类型专属关键摘要：Human task 显示 `Due · 2 business days`；其他类型应由自己的类型定义提供摘要。
-- 配置状态：`Needs setup` 是独立的配置提示，不显示 `Pending`、`Running`、`Completed`、`Failed` 等任何运行状态，也不在节点上展开完整 Inspector 配置。
+- 配置状态：`Needs setup` 以元数据行内的小圆点和文字显示，不使用胶囊、按钮或独立状态栏；不显示 `Pending`、`Running`、`Completed`、`Failed` 等任何运行状态，也不在节点上展开完整 Inspector 配置。
 - 四连接点：上、右、下、左各一个 React Flow Handle；命中区域与视觉圆点由 `workflow-canvas.css` 统一控制。
 
-节点保持稳定宽度，描述使用两行截断；在响应缩放时保持信息层级与连接点方向，不因缩放改变内容结构。Node 只表达流程结构和少量配置摘要，完整配置仍属于右侧 Inspector；运行状态属于未来 Run/Monitor 视图，明确排除在本模块视觉契约之外。
+节点采用无顶部色条、无内部横向分隔线的倒角长方形，保持稳定宽度，描述使用两行截断；在响应缩放时保持信息层级与连接点方向，不因缩放改变内容结构。Node 只表达流程结构、负责人/Provider 和轻量配置提示，不展示 Due 等时间摘要。完整配置仍属于右侧 Inspector；运行状态属于未来 Run/Monitor 视图，明确排除在本模块视觉契约之外。
 
 ## 5. 连接交互的数据流
 

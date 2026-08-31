@@ -30,7 +30,6 @@ export function createWorkflowNode({ type, position, presetId }: CreateWorkflowN
       description: definition.defaultDescription ?? definition.description,
       assignee: definition.defaultAssignee,
       provider: definition.defaultProvider,
-      summary: definition.defaultSummary,
       configStatus: definition.defaultConfigStatus ?? "Needs setup",
       capabilities: [...definition.capabilities],
       // 深拷贝默认配置，避免一个节点修改配置时污染其他节点或全局定义。

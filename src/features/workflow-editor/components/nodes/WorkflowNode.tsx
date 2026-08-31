@@ -21,7 +21,6 @@ export const WorkflowNodeComponent = memo(function WorkflowNodeComponent({
       description={data.description}
       assignee={data.assignee}
       provider={data.provider}
-      summary={data.summary}
       configStatus={data.configStatus}
       icon={definition.icon}
       selected={selected}

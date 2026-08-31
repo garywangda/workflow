@@ -12,14 +12,13 @@ import { BaseWorkflowNode } from "@/features/workflow-editor/components/nodes/Ba
 afterEach(cleanup);
 
 describe("workflow editor shadcn boundaries", () => {
-  it("renders a compact human task card with semantic metadata and four connection points", () => {
+  it("renders a mind-map style human task card without due or button-like status chrome", () => {
     render(<ReactFlowProvider><BaseWorkflowNode
       type="task"
       semanticLabel="Human task"
       name="Review purchase request"
       description="Check the request details before finance review."
       assignee="Maya Chen"
-      summary={{ label: "Due", value: "2 business days" }}
       configStatus="Needs setup"
       icon={MousePointer2}
     /></ReactFlowProvider>);
@@ -28,9 +27,9 @@ describe("workflow editor shadcn boundaries", () => {
     expect(screen.getByText("Review purchase request")).toBeInTheDocument();
     expect(screen.getByText("Check the request details before finance review.")).toBeInTheDocument();
     expect(screen.getByText("Maya Chen")).toBeInTheDocument();
-    expect(screen.getByText("Due")).toBeInTheDocument();
-    expect(screen.getByText("2 business days")).toBeInTheDocument();
-    expect(screen.getByText("Needs setup")).toBeInTheDocument();
+    expect(screen.queryByText("Due")).not.toBeInTheDocument();
+    expect(screen.queryByText("2 business days")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Configuration status")).toHaveTextContent("Needs setup");
     expect(screen.queryByText(/pending|running|completed|failed/i)).not.toBeInTheDocument();
     expect(screen.getAllByLabelText(/connection point$/i)).toHaveLength(4);
   });

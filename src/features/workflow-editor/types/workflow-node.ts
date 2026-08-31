@@ -61,7 +61,6 @@ export type WorkflowNodeData = {
   description: string;
   assignee?: string;
   provider?: string;
-  summary?: { label: string; value: string };
   configStatus: string;
   capabilities: NodeCapabilityId[];
   config: NodeConfig;
