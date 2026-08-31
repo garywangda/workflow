@@ -170,7 +170,7 @@
 }
 .workflow-node__config {
   margin-left: auto;
-  color: #ffedd5;
+  color: #ffb84d;
   font-size: 9px;
   font-weight: 650;
   white-space: nowrap;
@@ -207,34 +207,34 @@
 }
 
 .workflow-connection-handle.react-flow__handle-top {
-  top: -14px !important;
+  top: -26px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
 }
 
 .workflow-connection-handle.react-flow__handle-right {
   top: 50% !important;
-  right: -14px !important;
+  right: -26px !important;
   transform: translateY(-50%) !important;
 }
 
 .workflow-connection-handle.react-flow__handle-bottom {
-  bottom: -14px !important;
+  bottom: -26px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
 }
 
 .workflow-connection-handle.react-flow__handle-left {
   top: 50% !important;
-  left: -14px !important;
+  left: -26px !important;
   transform: translateY(-50%) !important;
 }
 
-/* workflow-node 的 2px 外框位于绝对定位包含块之外，连接点需额外外移 2px 才落在外轮廓正中。 */
-.workflow-node__connection-handles .workflow-connection-handle.react-flow__handle-top { top: -16px !important; }
-.workflow-node__connection-handles .workflow-connection-handle.react-flow__handle-right { right: -16px !important; }
-.workflow-node__connection-handles .workflow-connection-handle.react-flow__handle-bottom { bottom: -16px !important; }
-.workflow-node__connection-handles .workflow-connection-handle.react-flow__handle-left { left: -16px !important; }
+/* 13px 可见圆点与节点外轮廓保留约 5px 净距；普通卡片还需补偿 2px 外框。 */
+.workflow-node__connection-handles .workflow-connection-handle.react-flow__handle-top { top: -27px !important; }
+.workflow-node__connection-handles .workflow-connection-handle.react-flow__handle-right { right: -27px !important; }
+.workflow-node__connection-handles .workflow-connection-handle.react-flow__handle-bottom { bottom: -27px !important; }
+.workflow-node__connection-handles .workflow-connection-handle.react-flow__handle-left { left: -27px !important; }
 
 .workflow-connection-handle::before {
   /* 默认显示小圆点；hover/connecting/valid 状态下由下面的规则放大。 */
