@@ -170,7 +170,7 @@
 }
 .workflow-node__config {
   margin-left: auto;
-  color: color-mix(in oklab, var(--primary-foreground) 82%, transparent);
+  color: #ffedd5;
   font-size: 9px;
   font-weight: 650;
   white-space: nowrap;
@@ -204,28 +204,37 @@
   border-radius: 999px !important;
   background: transparent !important;
   pointer-events: all;
-  transform: none !important;
 }
 
 .workflow-connection-handle.react-flow__handle-top {
   top: -14px !important;
   left: 50% !important;
+  transform: translateX(-50%) !important;
 }
 
 .workflow-connection-handle.react-flow__handle-right {
   top: 50% !important;
   right: -14px !important;
+  transform: translateY(-50%) !important;
 }
 
 .workflow-connection-handle.react-flow__handle-bottom {
   bottom: -14px !important;
   left: 50% !important;
+  transform: translateX(-50%) !important;
 }
 
 .workflow-connection-handle.react-flow__handle-left {
   top: 50% !important;
   left: -14px !important;
+  transform: translateY(-50%) !important;
 }
+
+/* workflow-node 的 2px 外框位于绝对定位包含块之外，连接点需额外外移 2px 才落在外轮廓正中。 */
+.workflow-node__connection-handles .workflow-connection-handle.react-flow__handle-top { top: -16px !important; }
+.workflow-node__connection-handles .workflow-connection-handle.react-flow__handle-right { right: -16px !important; }
+.workflow-node__connection-handles .workflow-connection-handle.react-flow__handle-bottom { bottom: -16px !important; }
+.workflow-node__connection-handles .workflow-connection-handle.react-flow__handle-left { left: -16px !important; }
 
 .workflow-connection-handle::before {
   /* 默认显示小圆点；hover/connecting/valid 状态下由下面的规则放大。 */
@@ -385,6 +394,25 @@
   background: transparent !important;
   opacity: 0;
   transform: translate(-50%, -50%) !important;
+}
+
+.condition-branch-node__connection-handles {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.react-flow__node:hover .condition-branch-node__connection-handles,
+.workflow-canvas--connecting .condition-branch-node__connection-handles,
+.condition-branch-node[data-selected="true"] .condition-branch-node__connection-handles {
+  opacity: 1;
+}
+
+.workflow-canvas--suppress-connection-handles .condition-branch-node__connection-handles {
+  opacity: 0 !important;
 }
 
 .workflow-canvas .canvas-controls {

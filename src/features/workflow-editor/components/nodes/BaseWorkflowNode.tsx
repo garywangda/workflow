@@ -62,7 +62,7 @@ export function BaseWorkflowNode({
       <span className="workflow-node__body">
         <span className="workflow-node__category" aria-label="Node category">
           <span className="workflow-node__semantic-label">{semanticLabel}</span>
-          {!preview ? <span className="workflow-node__config" aria-label="Configuration status">{configStatus}</span> : null}
+          {!preview ? <span className="workflow-node__config" data-tone="warning" aria-label="Configuration status">{configStatus}</span> : null}
         </span>
         <span className="workflow-node__content">
           <span className="workflow-node__name">{name}</span>
