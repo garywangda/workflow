@@ -62,15 +62,11 @@ export function BaseWorkflowNode({
       <span className="workflow-node__body">
         <span className="workflow-node__category" aria-label="Node category">
           <span className="workflow-node__semantic-label">{semanticLabel}</span>
+          {!preview ? <span className="workflow-node__config" aria-label="Configuration status">{configStatus}</span> : null}
         </span>
         <span className="workflow-node__content">
           <span className="workflow-node__name">{name}</span>
-          {!preview ? (
-            <span className="workflow-node__footer">
-              {assignee || provider ? <span className="workflow-node__meta"><span>{assignee ? "Owner" : "Provider"}</span>{assignee ?? provider}</span> : null}
-              <span className="workflow-node__config" aria-label="Configuration status">{configStatus}</span>
-            </span>
-          ) : null}
+          {!preview && (assignee || provider) ? <span className="workflow-node__meta"><span>{assignee ? "Owner" : "Provider"}</span>{assignee ?? provider}</span> : null}
           {description ? <span className="workflow-node__description">{description}</span> : null}
         </span>
       </span>

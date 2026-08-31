@@ -11,26 +11,15 @@ export function ConditionBranchNodeComponent({ data, selected, dragging }: NodeP
       role="group"
       aria-label={`${data.label} condition branch`}
     >
-      <div className="condition-branch-node__handles" aria-label="Branch connection points">
-        <Handle
-          id="top"
-          type="target"
-          position={Position.Top}
-          className="workflow-connection-handle"
-          isConnectableStart={false}
-          isConnectableEnd
-          aria-label="Top branch connection point"
-        />
-        <Handle
-          id="bottom"
-          type="source"
-          position={Position.Bottom}
-          className="workflow-connection-handle"
-          isConnectableStart
-          isConnectableEnd={false}
-          aria-label="Bottom branch connection point"
-        />
-      </div>
+      <Handle
+        id="top"
+        type="target"
+        position={Position.Top}
+        className="condition-branch-target-handle"
+        isConnectableStart={false}
+        isConnectableEnd
+        aria-label="Condition branch input"
+      />
       <div className="condition-branch-node__shape">
         <span className="condition-branch-node__label">{data.label}</span>
       </div>

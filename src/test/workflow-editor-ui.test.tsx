@@ -19,7 +19,7 @@ describe("workflow editor shadcn boundaries", () => {
     expect(workflowNodeTypes).toHaveProperty("condition-branch");
   });
 
-  it("renders a condition branch as a labeled diamond with vertical connection points", () => {
+  it("renders a condition branch as a terminal diamond with one invisible input anchor", () => {
     const BranchNode = workflowNodeTypes["condition-branch"];
     const branchProps = {
       id: "branch-yes",
@@ -39,7 +39,10 @@ describe("workflow editor shadcn boundaries", () => {
     render(<ReactFlowProvider><BranchNode {...branchProps} /></ReactFlowProvider>);
 
     expect(screen.getByRole("group", { name: "Yes condition branch" })).toHaveTextContent("Yes");
-    expect(screen.getAllByLabelText(/branch connection point$/i)).toHaveLength(2);
+    const inputAnchor = screen.getByLabelText("Condition branch input");
+    expect(inputAnchor).toHaveClass("condition-branch-target-handle");
+    expect(inputAnchor).not.toHaveClass("workflow-connection-handle");
+    expect(screen.queryByLabelText("Bottom branch connection point")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Configuration status")).not.toBeInTheDocument();
   });
 
@@ -82,7 +85,9 @@ describe("workflow editor shadcn boundaries", () => {
     expect(owner.compareDocumentPosition(description)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(screen.queryByText("Due")).not.toBeInTheDocument();
     expect(screen.queryByText("2 business days")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Configuration status")).toHaveTextContent("Needs setup");
+    const configurationStatus = screen.getByLabelText("Configuration status");
+    expect(configurationStatus).toHaveTextContent("Needs setup");
+    expect(category).toContainElement(configurationStatus);
     expect(screen.queryByText(/pending|running|completed|failed/i)).not.toBeInTheDocument();
     expect(screen.getAllByLabelText(/connection point$/i)).toHaveLength(4);
   });

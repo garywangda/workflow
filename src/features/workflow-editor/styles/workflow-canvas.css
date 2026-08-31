@@ -169,22 +169,11 @@
   color: var(--primary-foreground);
 }
 .workflow-node__config {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
   margin-left: auto;
-  color: #80601d;
+  color: color-mix(in oklab, var(--primary-foreground) 82%, transparent);
   font-size: 9px;
   font-weight: 650;
   white-space: nowrap;
-}
-.workflow-node__config::before {
-  width: 5px;
-  height: 5px;
-  flex: 0 0 auto;
-  border-radius: 999px;
-  background: #c58b1b;
-  content: "";
 }
 
 .workflow-node__connection-handles {
@@ -335,13 +324,6 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
-.workflow-node__footer {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
 .workflow-node__meta {
   display: flex;
   align-items: center;
@@ -392,18 +374,18 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.16), 0 10px 22px rgba(31, 37, 45, 0.16);
 }
 
-.condition-branch-node__handles {
+.condition-branch-target-handle.react-flow__handle-top {
   position: absolute;
-  inset: 0;
+  top: 0 !important;
+  left: 50% !important;
   z-index: 4;
-  pointer-events: none;
+  width: 12px !important;
+  height: 12px !important;
+  border: 0 !important;
+  background: transparent !important;
   opacity: 0;
-  transition: opacity 120ms ease;
+  transform: translate(-50%, -50%) !important;
 }
-
-.react-flow__node:hover .condition-branch-node__handles,
-.workflow-canvas--connecting .condition-branch-node__handles,
-.condition-branch-node[data-selected="true"] .condition-branch-node__handles { opacity: 1; }
 
 .workflow-canvas .canvas-controls {
   display: inline-flex;
