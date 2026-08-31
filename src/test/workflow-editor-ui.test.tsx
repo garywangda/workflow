@@ -3,15 +3,64 @@ import userEvent from "@testing-library/user-event";
 import { MousePointer2 } from "lucide-react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type { ComponentProps } from "react";
 
 import { AppIconButton } from "@/components/app/AppIconButton";
 import { NodeLibrary } from "@/features/workflow-editor/components/library/NodeLibrary";
 import { WorkflowDeleteDialog } from "@/features/workflow-editor/components/menus/WorkflowDeleteDialog";
 import { BaseWorkflowNode } from "@/features/workflow-editor/components/nodes/BaseWorkflowNode";
+import { workflowNodeTypes } from "@/features/workflow-editor/components/nodes/node-types";
+import { WorkflowCanvas } from "@/features/workflow-editor/components/WorkflowCanvas";
 
 afterEach(cleanup);
 
 describe("workflow editor shadcn boundaries", () => {
+  it("registers a dedicated condition branch node type", () => {
+    expect(workflowNodeTypes).toHaveProperty("condition-branch");
+  });
+
+  it("renders a condition branch as a labeled diamond with vertical connection points", () => {
+    const BranchNode = workflowNodeTypes["condition-branch"];
+    const branchProps = {
+      id: "branch-yes",
+      type: "condition-branch",
+      data: { label: "Yes" },
+      selected: false,
+      dragging: false,
+      zIndex: 0,
+      selectable: true,
+      deletable: true,
+      draggable: true,
+      isConnectable: true,
+      positionAbsoluteX: 0,
+      positionAbsoluteY: 0,
+    } as ComponentProps<typeof BranchNode>;
+
+    render(<ReactFlowProvider><BranchNode {...branchProps} /></ReactFlowProvider>);
+
+    expect(screen.getByRole("group", { name: "Yes condition branch" })).toHaveTextContent("Yes");
+    expect(screen.getAllByLabelText(/branch connection point$/i)).toHaveLength(2);
+    expect(screen.queryByLabelText("Configuration status")).not.toBeInTheDocument();
+  });
+
+  it("shows yes and no branch children in the canvas example", () => {
+    render(
+      <ReactFlowProvider>
+        <div style={{ width: 900, height: 700 }}>
+          <WorkflowCanvas
+            activeEditorTool="select"
+            placementItem={null}
+            onEditorToolChange={vi.fn()}
+            onPlacementItemChange={vi.fn()}
+          />
+        </div>
+      </ReactFlowProvider>,
+    );
+
+    expect(screen.getByText("Yes")).toBeInTheDocument();
+    expect(screen.getByText("No")).toBeInTheDocument();
+  });
+
   it("renders a headed node card ordered as category, title, metadata, then description", () => {
     render(<ReactFlowProvider><BaseWorkflowNode
       type="task"

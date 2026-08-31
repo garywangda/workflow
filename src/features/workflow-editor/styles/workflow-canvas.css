@@ -354,6 +354,57 @@
 .workflow-node__meta span { color: #98a2b3; font-weight: 600; }
 .workflow-node__meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+.condition-branch-node {
+  width: 88px;
+  height: 88px;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.condition-branch-node__shape {
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #b88618;
+  border-radius: 5px;
+  background: #fff1b8;
+  box-shadow: 0 4px 10px rgba(80, 60, 18, 0.1);
+  transform: rotate(45deg);
+  transition: border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+}
+
+.condition-branch-node__label {
+  color: #5c4716;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  transform: rotate(-45deg);
+}
+
+.condition-branch-node:hover .condition-branch-node__shape { border-color: #966b0e; }
+.condition-branch-node[data-selected="true"] .condition-branch-node__shape {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2), 0 5px 12px rgba(80, 60, 18, 0.12);
+}
+.condition-branch-node[data-dragging="true"] .condition-branch-node__shape {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.16), 0 10px 22px rgba(31, 37, 45, 0.16);
+}
+
+.condition-branch-node__handles {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.react-flow__node:hover .condition-branch-node__handles,
+.workflow-canvas--connecting .condition-branch-node__handles,
+.condition-branch-node[data-selected="true"] .condition-branch-node__handles { opacity: 1; }
+
 .workflow-canvas .canvas-controls {
   display: inline-flex;
   align-items: center;

@@ -1,5 +1,6 @@
 import type { NodeOrigin, NodeTypes } from "@xyflow/react";
 import { DiagramNodeComponent } from "./DiagramNode";
+import { ConditionBranchNodeComponent } from "./ConditionBranchNode";
 import { WorkflowNodeComponent } from "./WorkflowNode";
 
 export const WORKFLOW_NODE_ORIGIN: NodeOrigin = [0.5, 0.5];
@@ -16,6 +17,7 @@ export const workflowNodeTypes = {
   wait: WorkflowNodeComponent,
   action: WorkflowNodeComponent,
   end: WorkflowNodeComponent,
+  "condition-branch": ConditionBranchNodeComponent,
   "diagram:rectangle": DiagramNodeComponent,
   "diagram:circle": DiagramNodeComponent,
   "diagram:diamond": DiagramNodeComponent,

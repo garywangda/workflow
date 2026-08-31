@@ -30,11 +30,42 @@ import { WorkflowDeleteDialog } from "./menus/WorkflowDeleteDialog";
 import { EditorTools } from "./tools/EditorTools";
 import { WORKFLOW_NODE_ORIGIN, workflowNodeTypes } from "./nodes/node-types";
 import { WorkflowNodePreview } from "./nodes/WorkflowNodePreview";
+import type { ConditionBranchNode } from "./nodes/ConditionBranchNode";
 
-type EditorNode = WorkflowNode | DiagramNode;
+type EditorNode = WorkflowNode | DiagramNode | ConditionBranchNode;
 
 // 画布的默认视口。节点和 Edge 的坐标都在 React Flow 的 flow 坐标系中维护。
 const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
+
+const exampleHumanTask = {
+  ...createWorkflowNode({ type: "task", position: { x: 170, y: 160 } }),
+  id: "example-human-task",
+  selected: false,
+};
+
+const exampleCondition = createWorkflowNode({ type: "condition", position: { x: 170, y: 350 } });
+const exampleConditionNode: WorkflowNode = {
+  ...exampleCondition,
+  id: "example-condition",
+  selected: true,
+  data: {
+    ...exampleCondition.data,
+    name: "Requirements met?",
+    description: "Route the workflow based on this condition.",
+  },
+};
+
+const INITIAL_NODES: EditorNode[] = [
+  exampleHumanTask,
+  exampleConditionNode,
+  { id: "example-yes", type: "condition-branch", position: { x: 70, y: 535 }, data: { label: "Yes" }, selected: false, selectable: false, ariaLabel: "Yes condition branch" },
+  { id: "example-no", type: "condition-branch", position: { x: 270, y: 535 }, data: { label: "No" }, selected: false, selectable: false, ariaLabel: "No condition branch" },
+];
+
+const INITIAL_EDGES: Edge[] = [
+  { id: "example-condition-yes", source: "example-condition", sourceHandle: "bottom", target: "example-yes", targetHandle: "top", type: "smoothstep" },
+  { id: "example-condition-no", source: "example-condition", sourceHandle: "bottom", target: "example-no", targetHandle: "top", type: "smoothstep" },
+];
 
 interface WorkflowCanvasProps {
   activeEditorTool: EditorTool;
@@ -63,10 +94,8 @@ function isEditableTarget(target: EventTarget | null) {
 export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolChange, onPlacementItemChange }: WorkflowCanvasProps) {
   // 画布是节点、Edge 和临时交互状态的唯一状态持有者。
   // 节点/Edge 的增删改由 React Flow 的 change handlers 驱动，便于后续接入持久化。
-  const [nodes, setNodes, onNodesChange] = useNodesState<EditorNode>([
-    createWorkflowNode({ type: "task", position: { x: 170, y: 230 } }),
-  ]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<EditorNode>(INITIAL_NODES);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(INITIAL_EDGES);
   const [placementPosition, setPlacementPosition] = useState<XYPosition | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [suppressConnectionHandles, setSuppressConnectionHandles] = useState(false);
