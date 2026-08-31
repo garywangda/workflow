@@ -116,9 +116,30 @@ describe("workflow editor shadcn boundaries", () => {
     ]);
     expect(screen.queryByRole("textbox", { name: "Search nodes" })).not.toBeInTheDocument();
     expect(screen.queryByText("Favorites")).not.toBeInTheDocument();
+    expect(screen.queryByText("Choose a type")).not.toBeInTheDocument();
   });
 
-  it("opens a placeholder in the same toolbar and restores focus on return", async () => {
+  it.each([
+    ["Trigger", ["Manual", "On a schedule", "Form submitted", "Record created", "Record updated", "Status changed", "Webhook received"]],
+    ["Human Task", ["Complete a task", "Fill out a form", "Upload documents", "Review information", "Complete checklist"]],
+    ["Approval", ["Single approver", "Any approver", "All approvers"]],
+    ["Action", ["Send email", "Send message", "Create record", "Update record", "Create task in another system", "Generate document", "HTTP request"]],
+    ["Logic", ["If / Else", "Switch", "Parallel", "Merge"]],
+    ["Wait", ["For a duration", "Until date or time", "Until record date", "For an event", "Until condition"]],
+    ["End", ["Success", "Rejected", "Cancelled", "Failed"]],
+  ])("shows the %s presets in its second-level menu", async (toolbarType, presetNames) => {
+    const user = userEvent.setup();
+    render(<NodeLibrary />);
+
+    await user.click(screen.getByRole("button", { name: toolbarType }));
+
+    const presetList = screen.getByRole("list", { name: `${toolbarType} presets` });
+    expect(within(presetList).getAllByRole("listitem").map((item) => item.textContent)).toEqual(
+      presetNames,
+    );
+  });
+
+  it("opens presets in the same toolbar and restores focus on return", async () => {
     const user = userEvent.setup();
     render(<NodeLibrary />);
 
@@ -126,10 +147,39 @@ describe("workflow editor shadcn boundaries", () => {
 
     expect(screen.queryByRole("navigation", { name: "Workflow node types" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Action" })).toHaveFocus();
-    expect(screen.getByText("Options for this node type will appear here.")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Action presets" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Back" }));
 
     expect(screen.getByRole("button", { name: "Action" })).toHaveFocus();
+  });
+
+  it("filters the open node preset list from the search field", async () => {
+    const user = userEvent.setup();
+    render(<NodeLibrary />);
+
+    await user.click(screen.getByRole("button", { name: "Trigger" }));
+    await user.type(screen.getByRole("searchbox", { name: "Search nodes" }), "record");
+
+    const presetList = screen.getByRole("list", { name: "Trigger presets" });
+    expect(within(presetList).getAllByRole("listitem").map((item) => item.textContent)).toEqual([
+      "Record created",
+      "Record updated",
+    ]);
+  });
+
+  it("marks the first preset as selected and lets the user select another preset", async () => {
+    const user = userEvent.setup();
+    render(<NodeLibrary />);
+
+    await user.click(screen.getByRole("button", { name: "Trigger" }));
+
+    expect(screen.getByRole("button", { name: "Manual" })).toHaveAttribute("aria-pressed", "true");
+    await user.click(screen.getByRole("button", { name: "On a schedule" }));
+    expect(screen.getByRole("button", { name: "Manual" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: "On a schedule" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
   });
 
   it("cancels the controlled delete dialog with Escape", async () => {
