@@ -1,4 +1,3 @@
-import type { LucideIcon } from "lucide-react";
 import { Handle, Position } from "@xyflow/react";
 import type { WorkflowNodeType } from "../../types/workflow-node";
 
@@ -18,7 +17,6 @@ interface BaseWorkflowNodeProps {
   assignee?: string;
   provider?: string;
   configStatus?: string;
-  icon: LucideIcon;
   selected?: boolean;
   dragging?: boolean;
   preview?: boolean;
@@ -32,7 +30,6 @@ export function BaseWorkflowNode({
   assignee,
   provider,
   configStatus = "Needs setup",
-  icon: Icon,
   selected = false,
   dragging = false,
   preview = false,
@@ -63,19 +60,18 @@ export function BaseWorkflowNode({
         </div>
       ) : null}
       <span className="workflow-node__body">
-        <span className="workflow-node__category">
-          <span className="workflow-node__icon" aria-hidden="true"><Icon size={15} strokeWidth={1.9} /></span>
+        <span className="workflow-node__category" aria-label="Node category">
           <span className="workflow-node__semantic-label">{semanticLabel}</span>
         </span>
         <span className="workflow-node__content">
           <span className="workflow-node__name">{name}</span>
-          {description ? <span className="workflow-node__description">{description}</span> : null}
           {!preview ? (
             <span className="workflow-node__footer">
               {assignee || provider ? <span className="workflow-node__meta"><span>{assignee ? "Owner" : "Provider"}</span>{assignee ?? provider}</span> : null}
               <span className="workflow-node__config" aria-label="Configuration status">{configStatus}</span>
             </span>
           ) : null}
+          {description ? <span className="workflow-node__description">{description}</span> : null}
         </span>
       </span>
     </div>

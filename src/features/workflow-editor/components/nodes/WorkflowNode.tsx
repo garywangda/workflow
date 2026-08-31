@@ -22,7 +22,6 @@ export const WorkflowNodeComponent = memo(function WorkflowNodeComponent({
       assignee={data.assignee}
       provider={data.provider}
       configStatus={data.configStatus}
-      icon={definition.icon}
       selected={selected}
       dragging={dragging}
     />

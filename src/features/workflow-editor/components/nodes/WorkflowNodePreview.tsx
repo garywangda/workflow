@@ -20,7 +20,7 @@ export function WorkflowNodePreview({ type, position }: WorkflowNodePreviewProps
       }}
       aria-hidden="true"
     >
-      <BaseWorkflowNode type={type} semanticLabel={definition.label} name={definition.defaultName} icon={definition.icon} preview />
+      <BaseWorkflowNode type={type} semanticLabel={definition.label} name={definition.defaultName} preview />
     </div>
   );
 }

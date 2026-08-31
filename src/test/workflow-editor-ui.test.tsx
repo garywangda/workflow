@@ -12,7 +12,7 @@ import { BaseWorkflowNode } from "@/features/workflow-editor/components/nodes/Ba
 afterEach(cleanup);
 
 describe("workflow editor shadcn boundaries", () => {
-  it("renders a mind-map style human task card without due or button-like status chrome", () => {
+  it("renders a headed node card ordered as category, title, metadata, then description", () => {
     render(<ReactFlowProvider><BaseWorkflowNode
       type="task"
       semanticLabel="Human task"
@@ -20,13 +20,17 @@ describe("workflow editor shadcn boundaries", () => {
       description="Check the request details before finance review."
       assignee="Maya Chen"
       configStatus="Needs setup"
-      icon={MousePointer2}
     /></ReactFlowProvider>);
 
-    expect(screen.getByText("Human task")).toBeInTheDocument();
-    expect(screen.getByText("Review purchase request")).toBeInTheDocument();
-    expect(screen.getByText("Check the request details before finance review.")).toBeInTheDocument();
-    expect(screen.getByText("Maya Chen")).toBeInTheDocument();
+    const category = screen.getByLabelText("Node category");
+    const title = screen.getByText("Review purchase request");
+    const owner = screen.getByText("Maya Chen");
+    const description = screen.getByText("Check the request details before finance review.");
+
+    expect(category).toHaveTextContent("Human task");
+    expect(category.compareDocumentPosition(title)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(title.compareDocumentPosition(owner)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(owner.compareDocumentPosition(description)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(screen.queryByText("Due")).not.toBeInTheDocument();
     expect(screen.queryByText("2 business days")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Configuration status")).toHaveTextContent("Needs setup");
