@@ -1,6 +1,7 @@
 import type { XYPosition } from "@xyflow/react";
 import { ACTION_PRESETS } from "../config/action-presets";
 import { WORKFLOW_NODE_DEFINITIONS } from "../config/workflow-node-definitions";
+import type { WorkflowNodeDefinition } from "../config/workflow-node-definitions";
 import type { ActionPresetId } from "../types/action-preset";
 import type { WorkflowNode, WorkflowNodeType } from "../types/workflow-node";
 
@@ -17,7 +18,7 @@ function createNodeId() {
 
 /** 根据节点定义或 Action preset 创建一个可直接交给 React Flow 的节点实例。 */
 export function createWorkflowNode({ type, position, presetId }: CreateWorkflowNodeInput): WorkflowNode {
-  const definition = WORKFLOW_NODE_DEFINITIONS[type];
+  const definition: WorkflowNodeDefinition = WORKFLOW_NODE_DEFINITIONS[type];
   const preset = presetId ? ACTION_PRESETS[presetId] : undefined;
 
   return {
@@ -26,6 +27,11 @@ export function createWorkflowNode({ type, position, presetId }: CreateWorkflowN
     position,
     data: {
       name: preset?.label ?? definition.defaultName,
+      description: definition.defaultDescription ?? definition.description,
+      assignee: definition.defaultAssignee,
+      provider: definition.defaultProvider,
+      summary: definition.defaultSummary,
+      configStatus: definition.defaultConfigStatus ?? "Needs setup",
       capabilities: [...definition.capabilities],
       // 深拷贝默认配置，避免一个节点修改配置时污染其他节点或全局定义。
       config: structuredClone(preset?.defaultConfig ?? definition.defaultConfig),

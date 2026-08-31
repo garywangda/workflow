@@ -22,6 +22,11 @@ export interface WorkflowNodeDefinition {
   description: string;
   icon: LucideIcon;
   defaultName: string;
+  defaultDescription?: string;
+  defaultAssignee?: string;
+  defaultProvider?: string;
+  defaultSummary?: { label: string; value: string };
+  defaultConfigStatus?: string;
   capabilities: readonly NodeCapabilityId[];
   defaultConfig: NodeConfig;
   appearance: { semanticRole: string };
@@ -32,7 +37,7 @@ export interface WorkflowNodeDefinition {
 // capabilities 决定 Inspector 展示哪些配置区块；keywords 决定 Node Library 的搜索结果。
 export const WORKFLOW_NODE_DEFINITIONS = {
   trigger: { type: "trigger", category: "event", label: "Trigger", description: "Starts a workflow when an event occurs.", icon: CirclePlay, defaultName: "Trigger", capabilities: ["setup", "output"], defaultConfig: {}, appearance: { semanticRole: "event" }, keywords: ["event", "start", "when"] },
-  task: { type: "task", category: "human", label: "Task", description: "Assigns a human step to someone on your team.", icon: Square, defaultName: "Task", capabilities: ["setup", "assignment", "form", "input", "output", "completion", "timing", "notification", "escalation", "permissions"], defaultConfig: {}, appearance: { semanticRole: "human-task" }, keywords: ["people", "human", "work"] },
+  task: { type: "task", category: "human", label: "Human task", description: "Assigns a human step to someone on your team.", icon: Square, defaultName: "Review purchase request", defaultDescription: "Check the request details before finance review.", defaultAssignee: "Maya Chen", defaultSummary: { label: "Due", value: "2 business days" }, defaultConfigStatus: "Needs setup", capabilities: ["setup", "assignment", "form", "input", "output", "completion", "timing", "notification", "escalation", "permissions"], defaultConfig: {}, appearance: { semanticRole: "human-task" }, keywords: ["people", "human", "work"] },
   approval: { type: "approval", category: "human", label: "Approval", description: "Requests a decision from one or more approvers.", icon: BadgeCheck, defaultName: "Approval", capabilities: ["setup", "assignment", "approvalPolicy", "form", "input", "output", "rules", "timing", "escalation", "notification"], defaultConfig: {}, appearance: { semanticRole: "approval" }, keywords: ["people", "review", "approve"] },
   form: { type: "form", category: "human", label: "Form", description: "Collects structured information from a person.", icon: ClipboardList, defaultName: "Form", capabilities: ["setup", "form", "input", "output", "timing"], defaultConfig: {}, appearance: { semanticRole: "form" }, keywords: ["people", "collect", "fields"] },
   condition: { type: "condition", category: "logic", label: "Condition", description: "Evaluates an IF / ELSE business rule.", icon: GitBranch, defaultName: "Condition", capabilities: ["setup", "input", "rules", "branches"], defaultConfig: {}, appearance: { semanticRole: "condition" }, keywords: ["logic", "if", "else", "decision", "rule"] },

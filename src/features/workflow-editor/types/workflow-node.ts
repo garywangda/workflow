@@ -58,6 +58,11 @@ export interface NodeMetadata {
 
 export type WorkflowNodeData = {
   name: string;
+  description: string;
+  assignee?: string;
+  provider?: string;
+  summary?: { label: string; value: string };
+  configStatus: string;
   capabilities: NodeCapabilityId[];
   config: NodeConfig;
   inputs: NodeInputDefinition[];

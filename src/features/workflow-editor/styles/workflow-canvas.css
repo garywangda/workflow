@@ -113,14 +113,12 @@
 }
 
 .workflow-node {
-  width: 190px;
-  min-height: 82px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
+  width: 232px;
+  min-height: 142px;
+  position: relative;
+  overflow: visible;
   border: 1px solid #d4dbe4;
-  border-radius: 8px;
+  border-radius: 9px;
   background: #ffffff;
   color: #1f2937;
   box-shadow: 0 4px 12px rgba(31, 37, 45, 0.08);
@@ -154,14 +152,14 @@
 }
 
 .workflow-node__icon {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   flex: 0 0 auto;
   display: inline-grid;
   place-items: center;
-  border-radius: 6px;
-  background: #f1f5f9;
-  color: #31506f;
+  border-radius: 5px;
+  background: #eaf2ff;
+  color: #2563eb;
 }
 
 .workflow-node[data-node-type="approval"] .workflow-node__icon {
@@ -177,7 +175,32 @@
 .workflow-node__content {
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 5px;
+  padding: 11px 14px 13px;
+}
+
+.workflow-node__body { display: block; }
+.workflow-node__category {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #dbe8fb;
+  background: #f4f8ff;
+  color: #31506f;
+}
+.workflow-node[data-node-type="task"] .workflow-node__category { border-top: 3px solid #2563eb; padding-top: 5px; }
+.workflow-node__config {
+  margin-left: auto;
+  padding: 3px 6px;
+  border: 1px solid #f1d49a;
+  border-radius: 999px;
+  background: #fffaf0;
+  color: #8a5a12;
+  font-size: 9px;
+  font-weight: 650;
+  white-space: nowrap;
 }
 
 .workflow-node__connection-handles {
@@ -303,7 +326,7 @@
 }
 
 .workflow-node__semantic-label {
-  color: #667085;
+  color: #31506f;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: .05em;
@@ -315,12 +338,32 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: #1f2937;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 650;
   letter-spacing: 0;
 }
-
-.workflow-node__status { color: #98a2b3; font-size: 10px; }
+.workflow-node__description {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #667085;
+  font-size: 11px;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.workflow-node__meta,
+.workflow-node__summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: #344054;
+  font-size: 10px;
+  line-height: 1.3;
+}
+.workflow-node__meta span,
+.workflow-node__summary span { color: #98a2b3; font-weight: 600; }
+.workflow-node__meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .workflow-canvas .canvas-controls {
   display: inline-flex;

@@ -63,7 +63,9 @@ function isEditableTarget(target: EventTarget | null) {
 export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolChange, onPlacementItemChange }: WorkflowCanvasProps) {
   // 画布是节点、Edge 和临时交互状态的唯一状态持有者。
   // 节点/Edge 的增删改由 React Flow 的 change handlers 驱动，便于后续接入持久化。
-  const [nodes, setNodes, onNodesChange] = useNodesState<EditorNode>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<EditorNode>([
+    createWorkflowNode({ type: "task", position: { x: 170, y: 230 } }),
+  ]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [placementPosition, setPlacementPosition] = useState<XYPosition | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);

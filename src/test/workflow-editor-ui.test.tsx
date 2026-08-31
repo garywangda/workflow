@@ -1,15 +1,40 @@
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MousePointer2 } from "lucide-react";
+import { ReactFlowProvider } from "@xyflow/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { AppIconButton } from "@/components/app/AppIconButton";
 import { NodeLibrary } from "@/features/workflow-editor/components/library/NodeLibrary";
 import { WorkflowDeleteDialog } from "@/features/workflow-editor/components/menus/WorkflowDeleteDialog";
+import { BaseWorkflowNode } from "@/features/workflow-editor/components/nodes/BaseWorkflowNode";
 
 afterEach(cleanup);
 
 describe("workflow editor shadcn boundaries", () => {
+  it("renders a compact human task card with semantic metadata and four connection points", () => {
+    render(<ReactFlowProvider><BaseWorkflowNode
+      type="task"
+      semanticLabel="Human task"
+      name="Review purchase request"
+      description="Check the request details before finance review."
+      assignee="Maya Chen"
+      summary={{ label: "Due", value: "2 business days" }}
+      configStatus="Needs setup"
+      icon={MousePointer2}
+    /></ReactFlowProvider>);
+
+    expect(screen.getByText("Human task")).toBeInTheDocument();
+    expect(screen.getByText("Review purchase request")).toBeInTheDocument();
+    expect(screen.getByText("Check the request details before finance review.")).toBeInTheDocument();
+    expect(screen.getByText("Maya Chen")).toBeInTheDocument();
+    expect(screen.getByText("Due")).toBeInTheDocument();
+    expect(screen.getByText("2 business days")).toBeInTheDocument();
+    expect(screen.getByText("Needs setup")).toBeInTheDocument();
+    expect(screen.queryByText(/pending|running|completed|failed/i)).not.toBeInTheDocument();
+    expect(screen.getAllByLabelText(/connection point$/i)).toHaveLength(4);
+  });
+
   it("gives icon-only application buttons an accessible name", () => {
     render(<AppIconButton label="Select tool"><MousePointer2 /></AppIconButton>);
     expect(screen.getByRole("button", { name: "Select tool" })).toBeInTheDocument();
