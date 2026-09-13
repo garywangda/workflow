@@ -16,7 +16,8 @@ import {
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
+import { DocumentContext } from '../../workflow-library/DocumentContext';
 import { createDiagramElement } from "../factories/create-diagram-element";
 import { createWorkflowNode } from "../factories/create-workflow-node";
 import type { EditorTool } from "../types/editor-tool";
@@ -94,8 +95,11 @@ function isEditableTarget(target: EventTarget | null) {
 export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolChange, onPlacementItemChange }: WorkflowCanvasProps) {
   // 画布是节点、Edge 和临时交互状态的唯一状态持有者。
   // 节点/Edge 的增删改由 React Flow 的 change handlers 驱动，便于后续接入持久化。
-  const [nodes, setNodes, onNodesChange] = useNodesState<EditorNode>(INITIAL_NODES);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(INITIAL_EDGES);
+  const documentSession = useContext(DocumentContext);
+  const [nodes, setNodes, onNodesChange] = useNodesState<EditorNode>(documentSession ? documentSession.initial.nodes as EditorNode[] : INITIAL_NODES);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(documentSession ? documentSession.initial.edges : INITIAL_EDGES);
+  const onDocumentChange = documentSession?.onChange;
+  useEffect(() => { onDocumentChange?.({ nodes, edges }); }, [nodes, edges, onDocumentChange]);
   const [placementPosition, setPlacementPosition] = useState<XYPosition | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [suppressConnectionHandles, setSuppressConnectionHandles] = useState(false);

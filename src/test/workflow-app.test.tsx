@@ -1,0 +1,21 @@
+import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, expect, it } from 'vitest';
+import { WorkflowApp } from '../WorkflowApp';
+import { saveDocument } from '../features/workflow-library/document';
+beforeEach(() => localStorage.clear());
+afterEach(cleanup);
+it('opens separate saved canvases and restores the filtered library on return', async () => {
+  const user = userEvent.setup();
+  render(<WorkflowApp />);
+  await user.click(screen.getByRole('button', { name: '载入示例流程' }));
+  saveDocument('sample-0', { nodes: [{ id: 'one', position: { x: 100, y: 100 }, data: { label: '采购专属节点' } }], edges: [] });
+  await user.selectOptions(screen.getByLabelText('Group 筛选'), 'supplies');
+  await user.click(screen.getByRole('button', { name: '打开 物品申请' }));
+  expect(screen.getByText('采购专属节点')).toBeInTheDocument();
+  expect(screen.queryByRole('navigation', { name: '全局导航' })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: '返回流程库' }));
+  expect(screen.getByLabelText('Group 筛选')).toHaveValue('supplies');
+  await user.click(screen.getByRole('button', { name: '打开 采购需求确认' }));
+  expect(screen.queryByText('采购专属节点')).not.toBeInTheDocument();
+});

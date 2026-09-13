@@ -1,0 +1,23 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="373" height="100" viewBox="0 0 373 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="&#230;&#181;&#129;&#231;&#168;&#139;&#231;&#188;&#169;&#231;&#149;&#165;&#233;&#162;&#132;&#232;&#167;&#136;" clip-path="url(#clip0_0_240)">
+<path id="Vector" d="M373 0H0V100H373V0Z" fill="#F7F8FA"/>
+<g id="Group">
+<path id="Vector_2" d="M78 50H114M184 50H219M257 50H289" stroke="#B5BDD1" stroke-width="1.5"/>
+<path id="Vector_3" d="M236 50V22H289" stroke="#B5BDD1" stroke-width="1.5"/>
+</g>
+<path id="Vector_4" d="M66 38H42C35.3726 38 30 43.3726 30 50C30 56.6274 35.3726 62 42 62H66C72.6274 62 78 56.6274 78 50C78 43.3726 72.6274 38 66 38Z" fill="#E3E8FC" stroke="#ADB8EE"/>
+<path id="Vector_5" d="M179 32H119C116.239 32 114 34.2386 114 37V63C114 65.7614 116.239 68 119 68H179C181.761 68 184 65.7614 184 63V37C184 34.2386 181.761 32 179 32Z" fill="white" stroke="#ADB8EE"/>
+<path id="Vector_6" d="M236 32L257 50L236 68L215 50L236 32Z" fill="#FFF5DE" stroke="#D6BE83"/>
+<path id="Vector_7" d="M338 38H294C291.239 38 289 40.2386 289 43V57C289 59.7614 291.239 62 294 62H338C340.761 62 343 59.7614 343 57V43C343 40.2386 340.761 38 338 38Z" fill="#E9F3ED" stroke="#A6C5B1"/>
+<path id="Vector_8" d="M338 12H294C291.239 12 289 14.2386 289 17V27C289 29.7614 291.239 32 294 32H338C340.761 32 343 29.7614 343 27V17C343 14.2386 340.761 12 338 12Z" fill="white" stroke="#B5BDD1"/>
+<g id="Vector_9">
+<path d="M128 44H170ZM128 52H155Z" fill="black"/>
+<path d="M128 44H170M128 52H155" stroke="#BCC4D6" stroke-width="3" stroke-linecap="round"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_0_240">
+<rect width="373" height="100" fill="white"/>
+</clipPath>
+</defs>
+</svg>

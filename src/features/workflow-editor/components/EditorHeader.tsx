@@ -4,14 +4,14 @@ import { AppIconButton } from "@/components/app/AppIconButton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 // 顶部栏只承载编辑器标题和全局操作入口，不拥有画布编辑状态。
-export function EditorHeader() {
+export function EditorHeader({ title, onBack }: { title?: string; onBack?: () => void } = {}) {
   return (
     <header className="editor-header">
-      <AppIconButton label="Back" tooltip="Back" className="justify-self-center text-muted-foreground hover:text-foreground">
+      <AppIconButton label={onBack ? '返回流程库' : 'Back'} tooltip={onBack ? '返回流程库' : 'Back'} onClick={onBack} className="justify-self-center text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" aria-hidden="true" />
       </AppIconButton>
       <div className="editor-header__title" aria-label="Workflow title">
-        Untitled workflow
+        {title || 'Untitled workflow'}
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

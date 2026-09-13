@@ -5,10 +5,10 @@ import "@xyflow/react/dist/style.css";
 import "./styles/global.css";
 import "./features/workflow-editor/styles/workflow-editor.css";
 import "./features/workflow-editor/styles/workflow-canvas.css";
-import { WorkflowEditorPage } from "./features/workflow-editor/WorkflowEditorPage";
+import { WorkflowApp } from './WorkflowApp';
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <WorkflowEditorPage />
+    <WorkflowApp />
   </StrictMode>,
 );
