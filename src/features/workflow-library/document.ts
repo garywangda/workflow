@@ -6,7 +6,7 @@ export function readDocument(id: string): WorkflowDocument {
   const value = JSON.parse(raw) as WorkflowDocument;
   if (!Array.isArray(value.nodes) || !Array.isArray(value.edges)
     || value.nodes.some(n => !n || typeof n.id !== 'string' || !Number.isFinite(n.position?.x) || !Number.isFinite(n.position?.y) || !n.data)
-    || value.edges.some(e => !e || typeof e.id !== 'string' || typeof e.source !== 'string' || typeof e.target !== 'string')) throw new Error('流程画布数据损坏');
+    || value.edges.some(e => !e || typeof e.id !== 'string' || typeof e.source !== 'string' || typeof e.target !== 'string')) throw new Error('Invalid workflow canvas data');
   return value;
 }
 export function saveDocument(id: string, document: WorkflowDocument) {

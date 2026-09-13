@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-export function LibraryDialog({ title, description, closeLabel = '关闭', drawer = false, onClose, children }: {
+export function LibraryDialog({ title, description, closeLabel = 'Close', drawer = false, onClose, children }: {
   title: string; description: string; closeLabel?: string; drawer?: boolean; onClose: () => void; children: ReactNode;
 }) {
   return <AlertDialog open onOpenChange={open => { if (!open) onClose(); }}>

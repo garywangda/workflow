@@ -14,7 +14,7 @@ export function WorkflowApp() {
 }
 
 function DocumentEditor({ file, onBack }: { file: WorkflowFile; onBack: () => void }) {
-  const [loaded] = useState(() => { try { return { document: readDocument(file.id), error: '' }; } catch { return { document: null, error: '无法打开这份流程，画布数据可能损坏或无法读取。原内容未被覆盖。' }; } });
+  const [loaded] = useState(() => { try { return { document: readDocument(file.id), error: '' }; } catch { return { document: null, error: 'Unable to open this workflow. The canvas data may be damaged or unavailable. Your data has not been overwritten.' }; } });
   const [error, setError] = useState('');
   const pending = useRef<WorkflowDocument | null>(null);
   const signature = useRef(loaded.document ? serializeDocument(loaded.document) : '');
@@ -30,7 +30,7 @@ function DocumentEditor({ file, onBack }: { file: WorkflowFile; onBack: () => vo
       signature.current = serialized;
       pending.current = null;
       setError('');
-    } catch { setError('保存失败，请重试。返回流程库前需要成功保存。'); }
+    } catch { setError('Save failed. Retry before returning to the library.'); }
   }, [file.id]);
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => { if (pending.current) { event.preventDefault(); event.returnValue = ''; } };
@@ -38,9 +38,9 @@ function DocumentEditor({ file, onBack }: { file: WorkflowFile; onBack: () => vo
     return () => window.removeEventListener('beforeunload', warn);
   }, []);
   const value = useMemo(() => loaded.document ? { initial: loaded.document, onChange: save } : null, [loaded.document, save]);
-  if (!value) return <main className="library-empty"><p role="alert">{loaded.error}</p><Button onClick={onBack}>返回流程库</Button></main>;
+  if (!value) return <main className="library-empty"><p role="alert">{loaded.error}</p><Button onClick={onBack}>Back to library</Button></main>;
   return <DocumentContext.Provider value={value}>
     <WorkflowEditorPage title={file.name} onBack={() => { if (pending.current) save(pending.current); if (!pending.current) onBack(); }} />
-    <div className="document-save-state" role={error ? 'alert' : 'status'}>{error || '已保存到此浏览器'}{error && <Button variant="outline" onClick={() => { if (pending.current) save(pending.current); }}>重试保存</Button>}</div>
+    <div className="document-save-state" role={error ? 'alert' : 'status'}>{error || 'Saved to this browser'}{error && <Button variant="outline" onClick={() => { if (pending.current) save(pending.current); }}>Retry save</Button>}</div>
   </DocumentContext.Provider>;
 }

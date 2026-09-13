@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 export function EditorHeader({ title, onBack }: { title?: string; onBack?: () => void } = {}) {
   return (
     <header className="editor-header">
-      <AppIconButton label={onBack ? '返回流程库' : 'Back'} tooltip={onBack ? '返回流程库' : 'Back'} onClick={onBack} className="justify-self-center text-muted-foreground hover:text-foreground">
+      <AppIconButton label={onBack ? 'Back to library' : 'Back'} tooltip={onBack ? 'Back to library' : 'Back'} onClick={onBack} className="justify-self-center text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" aria-hidden="true" />
       </AppIconButton>
       <div className="editor-header__title" aria-label="Workflow title">
