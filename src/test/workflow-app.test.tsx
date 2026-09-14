@@ -5,6 +5,14 @@ import { WorkflowApp } from '../WorkflowApp';
 import { saveDocument } from '../features/workflow-library/document';
 beforeEach(() => localStorage.clear());
 afterEach(cleanup);
+it('opens a newly created workflow with its fixed start form', async () => {
+  const user = userEvent.setup();
+  render(<WorkflowApp />);
+  await user.click(screen.getAllByRole('button', { name: 'New workflow' })[0]);
+  await user.type(screen.getByLabelText('Workflow name'), 'New request');
+  await user.click(screen.getByRole('button', { name: 'Create workflow' }));
+  expect(await screen.findByText('Start form · version 1 · 0 fields')).toBeInTheDocument();
+});
 it('opens separate saved canvases and restores the filtered library on return', async () => {
   const user = userEvent.setup();
   render(<WorkflowApp />);

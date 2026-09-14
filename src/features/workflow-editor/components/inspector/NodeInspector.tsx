@@ -10,18 +10,23 @@ import { INSPECTOR_BLOCK_DEFINITIONS } from "../../config/inspector-block-defini
 import { WORKFLOW_NODE_DEFINITIONS } from "../../config/workflow-node-definitions";
 import type { DiagramNode } from "../../types/diagram-element";
 import type { WorkflowNode } from "../../types/workflow-node";
+import { ConfigurationPanel } from '../../phase2/ConfigurationPanel';
+import '../../styles/inspector.css';
 
 type EditorSelection = WorkflowNode | DiagramNode;
 
 // Inspector 当前是能力驱动的展示壳；真实选中节点状态接入后可在此处连接配置表单。
 export function NodeInspector() {
   const nodes = useNodes<EditorSelection>();
-  const selectedNode = useMemo(() => nodes.find((node) => node.selected), [nodes]);
+  const selectedNode = useMemo(() => { const selected = nodes.filter(node => node.selected); return selected.length === 1 ? selected[0] : undefined; }, [nodes]);
 
-  if (!selectedNode) return null;
+  if (!selectedNode) return <ConfigurationPanel />;
   if (selectedNode.type.startsWith("diagram:")) return <DiagramInspector node={selectedNode as DiagramNode} />;
 
-  const node = selectedNode as WorkflowNode;
+  return <ConfigurationPanel key={selectedNode.id} node={selectedNode as WorkflowNode} />;
+}
+
+export function LegacyNodeInspector({ node }: { node: WorkflowNode }) {
   const definition = WORKFLOW_NODE_DEFINITIONS[node.type];
   const blocks = [...node.data.capabilities].sort((a, b) => INSPECTOR_BLOCK_DEFINITIONS[a].order - INSPECTOR_BLOCK_DEFINITIONS[b].order);
 

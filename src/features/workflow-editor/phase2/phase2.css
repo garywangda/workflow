@@ -1,0 +1,20 @@
+.phase2-inspector { overflow:auto; padding:16px; font-size:12px; }
+.phase2-inspector h2 { font-size:17px; font-weight:600; margin:8px 0; }
+.phase2-inspector label,.phase2-modal label { display:block; margin:10px 0; }
+.phase2-inspector input:not([type=checkbox]),.phase2-inspector select,.phase2-inspector textarea,.phase2-modal input:not([type=checkbox]),.phase2-modal select { display:block; width:100%; min-height:34px; border:1px solid #d7dce3; border-radius:6px; padding:6px 8px; background:white; color:#172033; }
+.phase2-inspector textarea { min-height:78px; }
+.phase2-inspector details { padding:12px 0; border-top:1px solid #e5e7eb; }
+.phase2-inspector summary { font-weight:600; cursor:pointer; }
+.phase2-inspector p,.phase2-modal p { color:#566274; font-size:12px; margin:8px 0; }
+.phase2-actions { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
+.phase2-modal { position:fixed; inset:24px; z-index:100; display:flex; flex-direction:column; background:#fff; color:#172033; border:1px solid #ccd3dc; border-radius:12px; box-shadow:0 16px 80px #17203355; padding:18px; }
+.phase2-modal header { display:flex; align-items:center; gap:12px; flex-wrap:wrap; border-bottom:1px solid #e5e7eb; }
+.phase2-modal header label { flex:1; }
+.phase2-form-layout { display:flex; flex:1; min-height:0; gap:16px; }
+.phase2-form-layout .phase2-form-surface { flex:1; min-width:0; overflow:auto; }
+.phase2-form-layout aside { width:260px; overflow:auto; padding:12px; }
+.phase2-modal fieldset { border:1px solid #d7dce3; border-radius:6px; padding:8px; margin:12px 0; }
+.phase2-modal legend { font-weight:600; }
+.phase2-inspector [role=alert],.phase2-modal [role=alert] { color:#b42318; }
+.phase2-issue { display:block; width:100%; text-align:left; padding:8px; border:1px solid #f5ccc7; margin:6px 0; border-radius:5px; }
+@media(max-width:800px) { .phase2-modal { inset:8px; }.phase2-form-layout { flex-direction:column; overflow:auto; }.phase2-form-layout iframe { min-height:420px; }.phase2-form-layout aside { width:100%; overflow:visible; } }

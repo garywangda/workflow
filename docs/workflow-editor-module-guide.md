@@ -1,5 +1,7 @@
 # Workflow Editor 模块说明
 
+> 第二轮更新：保留第一轮 Node Toolbar、预设菜单、节点样式与 WorkflowCanvas。Inspector 接入 `phase2/ConfigurationPanel.tsx`，配置通过 React Flow `updateNodeData` 写回，并沿第一轮 DocumentContext 自动保存。表单定义及字段绑定存入 `node.data.config.form`；独立表单编辑页通过校验来源的消息同步 JSON。详见 [第二轮实现与边界](phase2-node-configuration.md)。
+
 本文档用于帮助新的开发者或 AI 快速理解 Workflow Editor 的目录结构、状态边界和扩展方式。当前编辑器基于 React、TypeScript、Vite 和 `@xyflow/react` 构建。
 
 ## 1. 先看哪里

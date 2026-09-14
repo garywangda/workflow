@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
-import { readdir, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { cwd } from "node:process";
 import test from "node:test";
 
 async function readBuiltStyles() {
-  const assetsDirectory = join(cwd(), "dist", "assets");
-  const cssAsset = (await readdir(assetsDirectory)).find((file) => file.endsWith(".css"));
-  assert.ok(cssAsset, "Vite must emit a CSS asset before the style contract can be checked");
-  return readFile(join(assetsDirectory, cssAsset), "utf8");
+  const html = await readFile(join(cwd(), "dist", "index.html"), "utf8");
+  const cssAsset = html.match(/href="([^"]+\.css)"/)?.[1];
+  assert.ok(cssAsset, "The main HTML entry must reference its own CSS asset");
+  return readFile(join(cwd(), "dist", cssAsset.replace(/^\//, "")), "utf8");
 }
 
 test("built CSS keeps Tailwind, React Flow, global, and feature styles in the protected order", async () => {

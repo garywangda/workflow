@@ -5,6 +5,7 @@ import { DocumentContext } from './features/workflow-library/DocumentContext';
 import { readDocument, saveDocument, serializeDocument, type WorkflowDocument } from './features/workflow-library/document';
 import { LIBRARY_KEY, loadLibrary, type WorkflowFile } from './features/workflow-library/model';
 import { Button } from './components/ui/button';
+import { createPresetNodes } from './features/workflow-editor/phase2/model';
 
 export function WorkflowApp() {
   const [file, setFile] = useState<WorkflowFile | null>(null);
@@ -14,10 +15,17 @@ export function WorkflowApp() {
 }
 
 function DocumentEditor({ file, onBack }: { file: WorkflowFile; onBack: () => void }) {
-  const [loaded] = useState(() => { try { return { document: readDocument(file.id), error: '' }; } catch { return { document: null, error: 'Unable to open this workflow. The canvas data may be damaged or unavailable. Your data has not been overwritten.' }; } });
+  const [loaded] = useState(() => {
+    try {
+      const signature = localStorage.getItem(`workflow.document.${file.id}`);
+      return { document: signature === null ? { nodes: createPresetNodes('manual', { x: 220, y: 160 }), edges: [] } : readDocument(file.id), signature: signature ?? '', error: '' };
+    } catch {
+      return { document: null, signature: '', error: 'Unable to open this workflow. The canvas data may be damaged or unavailable. Your data has not been overwritten.' };
+    }
+  });
   const [error, setError] = useState('');
   const pending = useRef<WorkflowDocument | null>(null);
-  const signature = useRef(loaded.document ? serializeDocument(loaded.document) : '');
+  const signature = useRef(loaded.signature);
   const save = useCallback((document: WorkflowDocument) => {
     pending.current = document;
     const serialized = serializeDocument(document);
@@ -37,7 +45,7 @@ function DocumentEditor({ file, onBack }: { file: WorkflowFile; onBack: () => vo
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, []);
-  const value = useMemo(() => loaded.document ? { initial: loaded.document, onChange: save } : null, [loaded.document, save]);
+  const value = useMemo(() => loaded.document ? { id: file.id, initial: loaded.document, onChange: save } : null, [file.id, loaded.document, save]);
   if (!value) return <main className="library-empty"><p role="alert">{loaded.error}</p><Button onClick={onBack}>Back to library</Button></main>;
   return <DocumentContext.Provider value={value}>
     <WorkflowEditorPage title={file.name} onBack={() => { if (pending.current) save(pending.current); if (!pending.current) onBack(); }} />
