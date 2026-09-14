@@ -63,3 +63,23 @@ it('places the selected toolbar preset on the canvas with its phase-two configur
     data: { name: 'On a schedule', config: { presetId: 'schedule' } },
   });
 });
+
+it('opens a new form designer from a fill-out-form node', async () => {
+  const user = userEvent.setup();
+  const [node] = createPresetNodes('fillForm', { x: 120, y: 120 });
+  node.selected = true;
+  const initial: WorkflowDocument = { nodes: [node], edges: [] };
+
+  render(
+    <DocumentContext.Provider value={{ id: 'form-test', initial, onChange: () => {} }}>
+      <ReactFlowProvider>
+        <div style={{ width: 1200, height: 800 }}><WorkflowEditorWorkspace /></div>
+      </ReactFlowProvider>
+    </DocumentContext.Provider>,
+  );
+
+  await user.click(screen.getByRole('button', { name: 'New form' }));
+
+  expect(screen.getByRole('dialog', { name: 'Form designer' })).toBeInTheDocument();
+  expect(screen.getByTitle('Visual form editor')).toBeInTheDocument();
+});

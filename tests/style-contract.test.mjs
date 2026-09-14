@@ -40,3 +40,11 @@ test("built CSS exposes application and workflow semantic tokens", async () => {
     assert.ok(css.includes(token), `missing built CSS token ${token}`);
   }
 });
+
+test("phase-two inspector remains vertically scrollable after all feature styles load", async () => {
+  const css = await readBuiltStyles();
+  const rule = css.match(/\.node-inspector\.phase2-inspector\{([^}]*)\}/)?.[1];
+
+  assert.ok(rule, "the phase-two inspector needs a selector stronger than the legacy overflow rule");
+  assert.match(rule, /overflow-y:auto/);
+});
