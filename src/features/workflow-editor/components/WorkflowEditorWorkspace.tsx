@@ -27,7 +27,7 @@ export function WorkflowEditorWorkspace() {
 
   return (
     <section className="flex min-h-0 flex-1 overflow-hidden" aria-label="Editor workspace">
-      <NodeLibrary />
+      <NodeLibrary placementItem={placementItem} onPlacementItemChange={handlePlacementItemChange} />
       <WorkflowCanvas activeEditorTool={activeEditorTool} placementItem={placementItem} onEditorToolChange={handleEditorToolChange} onPlacementItemChange={handlePlacementItemChange} />
       <NodeInspector />
     </section>

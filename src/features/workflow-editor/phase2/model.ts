@@ -27,11 +27,11 @@ export const PRESETS: Record<string, { type: WorkflowNodeType; label: string; de
   terminated: { type: 'end', label: 'Early end', defaults: { result: 'Terminated', unfinished: 'cancel' } },
 };
 export function emptyForm(): FormAsset { return { id: crypto.randomUUID(), name: 'Start form', version: 1, schema: { components: [] }, bindings: [] }; }
-export function createPresetNodes(presetId: string, position: XYPosition): WorkflowNode[] {
+export function createPresetNodes(presetId: string, position: XYPosition, options: { name?: string; config?: Record<string, unknown> } = {}): WorkflowNode[] {
   const preset = PRESETS[presetId];
   if (!preset || preset.disabled) throw new Error('This preset is not available in this round');
   const node = createWorkflowNode({ type: preset.type, position });
-  node.data = { ...node.data, name: preset.label, description: '', assignee: undefined, config: { presetId, ...structuredClone(preset.defaults ?? {}) } };
+  node.data = { ...node.data, name: options.name ?? preset.label, description: '', assignee: undefined, config: { presetId, ...structuredClone(preset.defaults ?? {}), ...structuredClone(options.config ?? {}) } };
   if (presetId === 'manual' || presetId === 'fillForm') node.data.config.form = emptyForm();
   if (presetId !== 'parallel') return [node];
   const join = createWorkflowNode({ type: 'merge', position: { x: position.x, y: position.y + 360 } });

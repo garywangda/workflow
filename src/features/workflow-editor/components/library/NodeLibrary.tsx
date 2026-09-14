@@ -3,12 +3,18 @@ import { useLayoutEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { NODE_LIBRARY_PRESETS } from "@/features/workflow-editor/config/node-library-presets";
+import { NODE_LIBRARY_PRESETS, resolveNodeLibraryPlacement } from "@/features/workflow-editor/config/node-library-presets";
 import { WORKFLOW_NODE_TOOLBAR_DEFINITIONS } from "@/features/workflow-editor/config/node-toolbar-definitions";
 import type { WorkflowNodeToolbarType } from "@/features/workflow-editor/types/node-toolbar";
+import type { PlacementItem } from "@/features/workflow-editor/types/placement";
 import { cn } from "@/lib/utils";
 
-export function NodeLibrary() {
+interface NodeLibraryProps {
+  placementItem?: PlacementItem | null;
+  onPlacementItemChange?: (item: PlacementItem | null) => void;
+}
+
+export function NodeLibrary({ placementItem = null, onPlacementItemChange = () => {} }: NodeLibraryProps = {}) {
   const [selectedType, setSelectedType] = useState<WorkflowNodeToolbarType | null>(null);
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -55,6 +61,7 @@ export function NodeLibrary() {
     <aside
       aria-label="Node toolbar"
       className="flex min-h-0 w-[208px] shrink-0 flex-col overflow-y-auto border-r border-border bg-panel px-2.5 pb-4 pt-3"
+      data-placement-active={placementItem ? "true" : "false"}
     >
       {selectedDefinition ? (
         <section aria-labelledby="node-toolbar-title" className="min-w-0">
@@ -97,16 +104,23 @@ export function NodeLibrary() {
           <ul aria-label={`${selectedDefinition.label} presets`} className="grid gap-0">
             {filteredPresets.map((preset) => {
               const isSelected = preset.id === selectedPresetId;
+              const { placement, unavailableReason } = resolveNodeLibraryPlacement(preset);
 
               return (
                 <li key={preset.id}>
                   <button
                     aria-pressed={isSelected}
                     className={cn(
-                      "node-library__preset-button relative flex min-h-9 w-full cursor-pointer items-center rounded-md px-6 text-left font-medium text-secondary-foreground outline-none transition-colors duration-200 hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/45 motion-reduce:transition-none",
+                      "node-library__preset-button relative flex min-h-9 w-full cursor-pointer items-center rounded-md px-6 text-left font-medium text-secondary-foreground outline-none transition-colors duration-200 hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/45 disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none",
                       isSelected && "bg-primary/10 font-semibold text-primary hover:bg-primary/10",
                     )}
-                    onClick={() => setSelectedPresetId(preset.id)}
+                    disabled={!placement}
+                    onClick={() => {
+                      if (!placement) return;
+                      setSelectedPresetId(preset.id);
+                      onPlacementItemChange(placement);
+                    }}
+                    title={unavailableReason}
                     type="button"
                   >
                     {isSelected ? (

@@ -32,6 +32,7 @@ import { EditorTools } from "./tools/EditorTools";
 import { WORKFLOW_NODE_ORIGIN, workflowNodeTypes } from "./nodes/node-types";
 import { WorkflowNodePreview } from "./nodes/WorkflowNodePreview";
 import type { ConditionBranchNode } from "./nodes/ConditionBranchNode";
+import { createPresetNodes } from "../phase2/model";
 
 type EditorNode = WorkflowNode | DiagramNode | ConditionBranchNode;
 
@@ -207,15 +208,17 @@ export function WorkflowCanvas({ activeEditorTool, placementItem, onEditorToolCh
     setContextMenu(null);
     if (!placementItem) return;
     const position = positionFromEvent(event);
-    let newNode: EditorNode;
+    let newNodes: EditorNode[];
     if (placementItem.kind === "workflow-node") {
-      newNode = createWorkflowNode({ type: placementItem.type, position });
+      newNodes = placementItem.presetId
+        ? createPresetNodes(placementItem.presetId, position, { name: placementItem.presetName, config: placementItem.presetConfig })
+        : [createWorkflowNode({ type: placementItem.type, position })];
     } else if (placementItem.kind === "action-preset") {
-      newNode = createWorkflowNode({ type: "action", presetId: placementItem.presetId, position });
+      newNodes = [createWorkflowNode({ type: "action", presetId: placementItem.presetId, position })];
     } else {
-      newNode = createDiagramElement({ type: placementItem.type, position });
+      newNodes = [createDiagramElement({ type: placementItem.type, position })];
     }
-    setNodes((currentNodes) => [...currentNodes.map((node) => ({ ...node, selected: false })), newNode]);
+    setNodes((currentNodes) => [...currentNodes.map((node) => ({ ...node, selected: false })), ...newNodes]);
     setPlacementPosition(null);
     onPlacementItemChange(null);
     onEditorToolChange("select");

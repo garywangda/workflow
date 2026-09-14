@@ -154,11 +154,11 @@
 
 ## 8. Canvas 核心边界
 
-`WorkflowCanvas.tsx` 未修改。Node Toolbar、节点创建工厂入口、连线 handlers、四个 Handles、吸附参数、节点拖动、视口、缩放和删除确认逻辑保持第一轮版本。
+`WorkflowCanvas.tsx` 只在原有 `handlePaneClick` 节点创建分支中做了极小修改：当放置数据带有第二轮 `presetId` 时调用现有 `createPresetNodes`，并允许 Parallel 一次追加配对的 Merge。之所以必须在 Canvas 内完成这一步，是因为只有 Canvas 持有最终 React Flow 坐标和 nodes 状态。连线 handlers、四个 Handles、吸附参数、节点拖动、视口、缩放和删除确认逻辑均保持第一轮行为。
 
 第二轮只在 Inspector、配置模型、表单设计器和流程文件初始化层增加能力。若以后确实必须修改 Canvas 核心，应满足以下条件：改动范围极小、说明不可替代的原因、不改变现有行为，并先增加相应 regression test。
 
-`phase2-canvas.test.tsx` 使用真实 React Flow 验证原有节点放置、既有连线保留，以及取消/确认删除行为。
+`phase2-canvas.test.tsx` 使用真实 React Flow 验证 Toolbar 预设进入放置状态并生成正确配置，同时继续验证原有节点放置、既有连线保留，以及取消/确认删除行为。
 
 ## 9. 当前已知限制
 

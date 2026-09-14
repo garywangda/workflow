@@ -5,6 +5,9 @@ import type { WorkflowNodeType } from "./workflow-node";
 export type WorkflowNodePlacement = {
   kind: "workflow-node";
   type: WorkflowNodeType;
+  presetId?: string;
+  presetName?: string;
+  presetConfig?: Record<string, unknown>;
 };
 
 export type DiagramElementPlacement = {

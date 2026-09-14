@@ -3,10 +3,12 @@ import { ReactFlowProvider } from '@xyflow/react';
 import { afterEach, expect, it } from 'vitest';
 import { useState } from 'react';
 import { WorkflowCanvas } from '../features/workflow-editor/components/WorkflowCanvas';
+import { WorkflowEditorWorkspace } from '../features/workflow-editor/components/WorkflowEditorWorkspace';
 import { DocumentContext } from '../features/workflow-library/DocumentContext';
 import { createPresetNodes } from '../features/workflow-editor/phase2/model';
 import type { WorkflowDocument } from '../features/workflow-library/document';
 import type { PlacementItem } from '../features/workflow-editor/types/placement';
+import userEvent from '@testing-library/user-event';
 
 afterEach(cleanup);
 
@@ -35,4 +37,29 @@ it('keeps the original node placement, edge preservation, and confirmed deletion
   fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
   await waitFor(() => expect(document.nodes).toHaveLength(2));
   expect(document.edges.map(e => e.id)).toEqual(['preserved-edge']);
+});
+
+it('places the selected toolbar preset on the canvas with its phase-two configuration', async () => {
+  const user = userEvent.setup();
+  let document: WorkflowDocument = { nodes: [], edges: [] };
+  const initial: WorkflowDocument = { nodes: [], edges: [] };
+  const view = render(
+    <DocumentContext.Provider value={{ id: 'placement-test', initial, onChange: next => { document = next; } }}>
+      <ReactFlowProvider>
+        <div style={{ width: 1200, height: 800 }}><WorkflowEditorWorkspace /></div>
+      </ReactFlowProvider>
+    </DocumentContext.Provider>,
+  );
+
+  await user.click(screen.getByRole('button', { name: 'Trigger' }));
+  await user.click(screen.getByRole('button', { name: 'On a schedule' }));
+  expect(screen.getByRole('complementary', { name: 'Node toolbar' })).toHaveAttribute('data-placement-active', 'true');
+  const pane = view.container.querySelector('.react-flow__pane')!;
+  fireEvent.click(pane, { clientX: 500, clientY: 240 });
+
+  await waitFor(() => expect(document.nodes).toHaveLength(1));
+  expect(document.nodes[0]).toMatchObject({
+    type: 'trigger',
+    data: { name: 'On a schedule', config: { presetId: 'schedule' } },
+  });
 });

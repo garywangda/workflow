@@ -1,8 +1,47 @@
 import type { WorkflowNodeToolbarType } from "@/features/workflow-editor/types/node-toolbar";
+import type { WorkflowNodePlacement } from "@/features/workflow-editor/types/placement";
 
 export interface NodeLibraryPresetDefinition {
   id: string;
   label: string;
+}
+
+type PlacementDefinition = Omit<WorkflowNodePlacement, "kind" | "presetName">;
+
+const PRESET_PLACEMENTS: Record<string, PlacementDefinition> = {
+  manual: { type: "trigger", presetId: "manual" },
+  schedule: { type: "trigger", presetId: "schedule" },
+  completeTask: { type: "task", presetId: "completeTask" },
+  fillForm: { type: "form", presetId: "fillForm" },
+  uploadDocuments: { type: "task", presetId: "completeTask", presetConfig: { evidence: true } },
+  reviewInformation: { type: "task", presetId: "completeTask" },
+  completeChecklist: { type: "task", presetId: "completeTask" },
+  singleApprover: { type: "approval", presetId: "approval", presetConfig: { approvalRule: "all" } },
+  anyApprover: { type: "approval", presetId: "approval", presetConfig: { approvalRule: "any" } },
+  allApprovers: { type: "approval", presetId: "approval", presetConfig: { approvalRule: "all" } },
+  sendMessage: { type: "action", presetId: "sendMessage" },
+  updateRecord: { type: "action", presetId: "updateData" },
+  ifElse: { type: "condition", presetId: "ifElse" },
+  parallel: { type: "parallel", presetId: "parallel" },
+  merge: { type: "merge" },
+  duration: { type: "wait", presetId: "duration", presetConfig: { waitMode: "duration" } },
+  dateTime: { type: "wait", presetId: "duration", presetConfig: { waitMode: "date" } },
+  recordDate: { type: "wait", presetId: "duration", presetConfig: { waitMode: "field" } },
+  success: { type: "end", presetId: "success", presetConfig: { result: "Completed" } },
+  rejected: { type: "end", presetId: "terminated", presetConfig: { result: "Rejected" } },
+  cancelled: { type: "end", presetId: "terminated", presetConfig: { result: "Cancelled" } },
+  failed: { type: "end", presetId: "terminated", presetConfig: { result: "Failed" } },
+};
+
+const EVENT_PRESETS = new Set(["formSubmitted", "recordCreated", "recordUpdated", "statusChanged", "webhookReceived", "event"]);
+const EXTERNAL_PRESETS = new Set(["sendEmail", "createRecord", "createExternalTask", "generateDocument", "httpRequest"]);
+
+export function resolveNodeLibraryPlacement(preset: NodeLibraryPresetDefinition): { placement: WorkflowNodePlacement | null; unavailableReason?: string } {
+  if (EVENT_PRESETS.has(preset.id)) return { placement: null, unavailableReason: "Event connections are not available in this round." };
+  if (EXTERNAL_PRESETS.has(preset.id)) return { placement: null, unavailableReason: "External service connections are not available in this round." };
+  const definition = PRESET_PLACEMENTS[preset.id];
+  if (!definition) return { placement: null, unavailableReason: "This preset is not available in the current configuration model." };
+  return { placement: { kind: "workflow-node", ...definition, presetName: preset.label } };
 }
 
 export const NODE_LIBRARY_PRESETS = {

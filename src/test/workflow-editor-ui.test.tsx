@@ -193,6 +193,12 @@ describe("workflow editor shadcn boundaries", () => {
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
+  it("renders the delete confirmation on an opaque white surface", () => {
+    render(<WorkflowDeleteDialog nodeCount={1} edgeCount={0} onCancel={vi.fn()} onConfirm={vi.fn()} />);
+
+    expect(screen.getByRole("alertdialog")).toHaveClass("bg-white");
+  });
+
   it("disables delete actions while asynchronous confirmation is pending", async () => {
     const user = userEvent.setup();
     let resolveConfirmation: (() => void) | undefined;

@@ -31,7 +31,7 @@ export function WorkflowDeleteDialog({ nodeCount, edgeCount, onCancel, onConfirm
 
   return (
     <AlertDialog open onOpenChange={(open) => { if (!open && !isConfirming) onCancel(); }}>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-white">
         <AlertDialogHeader>
           <AlertDialogTitle>Delete {targetLabel}?</AlertDialogTitle>
           <AlertDialogDescription>This action cannot be undone.{connectedEdgeLabel}</AlertDialogDescription>
